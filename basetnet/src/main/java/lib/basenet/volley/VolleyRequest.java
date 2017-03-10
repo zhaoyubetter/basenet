@@ -14,7 +14,8 @@ import com.android.volley.toolbox.Volley;
 
 import java.util.Map;
 
-import better.basenet.base.request.AbsRequest;
+import lib.basenet.request.AbsRequest;
+
 
 /**
  * Volley请求封装类
@@ -66,14 +67,14 @@ public class VolleyRequest extends AbsRequest {
         mRequest = new StringRequest(tReqType, tUrl, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                if(mCallBack != null) {
+                if (mCallBack != null) {
                     mCallBack.onSuccess(response);
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                if(mCallBack != null) {
+                if (mCallBack != null) {
                     mCallBack.onFailure(error);
                 }
             }

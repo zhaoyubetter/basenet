@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import better.basenet.base.request.AbsRequest;
-import better.basenet.utils.FileUtils;
+import lib.basenet.request.AbsRequest;
+import lib.basenet.utils.FileUtils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
@@ -20,6 +20,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
 
 /**
  * okhttp 类
