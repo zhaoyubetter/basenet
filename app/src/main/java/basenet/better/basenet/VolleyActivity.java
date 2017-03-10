@@ -49,15 +49,25 @@ public class VolleyActivity extends AppCompatActivity implements View.OnClickLis
                 .url(tUrl)
                 .callback(new AbsRequestCallBack() {
                     @Override
-                    public void onSuccess(Object o) {
+                    public void onSuccess(final Object o) {
                         super.onSuccess(o);
-                        result.setText(o.toString());
+                        result.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.setText(o.toString());
+                            }
+                        });
                     }
 
                     @Override
-                    public void onFailure(Throwable e) {
+                    public void onFailure(final Throwable e) {
                         super.onFailure(e);
-                        result.setText(e.toString());
+                        result.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                result.setText(e.toString());
+                            }
+                        });
                     }
                 });
 
