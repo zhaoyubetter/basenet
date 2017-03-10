@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BaseNet</string>
+    <string name="title_activity_volley">VolleyActivity</string>
 </resources>
