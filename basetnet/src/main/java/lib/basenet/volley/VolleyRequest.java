@@ -54,7 +54,7 @@ public class VolleyRequest extends AbsRequest {
     private void realRequest(final int reqType) {
         int tReqType = Request.Method.GET;
         String tUrl = mUrl;
-        switch (tReqType) {
+        switch (reqType) {
             case Request.Method.GET:
                 tReqType = Request.Method.GET;
                 tUrl = generateUrl(mUrl, mParams);
