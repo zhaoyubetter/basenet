@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.volley.VolleyRequest;
@@ -74,7 +77,10 @@ public class VolleyActivity extends AppCompatActivity implements View.OnClickLis
         if (R.id.get == v.getId()) {
             builder.type(AbsRequest.RequestType.GET).build().request();
         } else if (R.id.post == v.getId()) {
-            builder.type(AbsRequest.RequestType.POST).build().request();
-        }
+            Map<String,String> params = new HashMap<>();
+            params.put("key1", "value1");
+            params.put("key2", "value2");
+            builder.type(AbsRequest.RequestType.POST).body(params).build().request();
+    }
     }
 }

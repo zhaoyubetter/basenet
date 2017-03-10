@@ -12,6 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import basenet.better.basenet.utils.PermissionUtils;
 import lib.basenet.okhttp.OkHttpRequest;
@@ -95,7 +97,10 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
         if (R.id.get == v.getId()) {
             builder.type(AbsRequest.RequestType.GET).build().request();
         } else if (R.id.post == v.getId()) {
-            // builder.type(AbsRequest.RequestType.POST).build().request();
+            Map<String,String> params = new HashMap<>();
+            params.put("key1", "value1");
+            params.put("key2", "value2");
+            builder.type(AbsRequest.RequestType.POST).body(params).build().request();
         } else if (R.id.down == v.getId()) {
             checkPermissionAndGo(builder);
 
@@ -112,5 +117,15 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
                 builder.url(imgUrl).downFile(file).build().request();
             }
         });
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionUtils.requestResult(requestCode, permissions, grantResults, new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }, null);
     }
 }
