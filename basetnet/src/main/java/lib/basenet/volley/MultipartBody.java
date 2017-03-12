@@ -18,7 +18,7 @@ import java.util.Random;
  * 参考：http://blog.csdn.net/bboyfeiyu/article/details/42266869
  * Created by zhaoyu1 on 2017/3/10.
  */
-public class MultipartBody {
+class MultipartBody {
 
 
 	private final static char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
@@ -153,14 +153,14 @@ public class MultipartBody {
 									 String fileName) {
 		try {
 			writeFirstBoundary();
-			if(type != null && type.length() > 0) {
+			if (type != null && type.length() > 0) {
 				mOutputStream.write((CONTENT_TYPE + type + NEW_LINE_STR).getBytes());
 			}
 			mOutputStream.write(getContentDispositionBytes(paramName, fileName));
 			mOutputStream.write(NEW_LINE_STR.getBytes());
 			mSb.append(new String(rawData));
 
-			if(encodingBytes != null) {
+			if (encodingBytes != null) {
 				mOutputStream.write(encodingBytes);
 			}
 

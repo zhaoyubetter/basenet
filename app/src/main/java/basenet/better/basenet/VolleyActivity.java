@@ -79,8 +79,10 @@ public class VolleyActivity extends AppCompatActivity implements View.OnClickLis
 		if (R.id.get == v.getId()) {
 			builder.type(AbsRequest.RequestType.GET).build().request();
 		} else if (R.id.post == v.getId()) {
-			upload();
+//			upload();
+			down();
 		}
+
 	}
 
 	private void upload() {
@@ -125,5 +127,46 @@ public class VolleyActivity extends AppCompatActivity implements View.OnClickLis
 			}
 		})
 				.body(params).uploadFiles(uploadFiles).build().request();
+	}
+
+	private void down() {
+		String imgUrl = "http://192.168.0.108:8080/myTestWeb/DownServlet";
+		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(absolutePath + "/4456.jpg");
+		new VolleyRequest.Builder(getApplicationContext()).url(imgUrl).downFile(file).callback(new AbsRequestCallBack() {
+			@Override
+			public void onSuccess(final Object o) {
+				super.onSuccess(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + o.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(final Throwable e) {
+				super.onFailure(e);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + e.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+				super.onProgressUpdate(contentLength, bytesRead, done);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(String.format("total:%s, already:%s, isDone: %s", contentLength, bytesRead, done));
+
+					}
+				});
+			}
+		}).build().request();
 	}
 }

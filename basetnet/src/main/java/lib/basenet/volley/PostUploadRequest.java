@@ -17,7 +17,7 @@ import java.util.Map;
  * Created by zhaoyu on 2017/3/11.
  */
 
-public class PostUploadRequest extends Request<String> {
+class PostUploadRequest extends Request<String> {
 
 	private Response.Listener mListener;
 
@@ -51,6 +51,7 @@ public class PostUploadRequest extends Request<String> {
 		this.mListener = mListener;
 		// 超时设置 10 分钟
 		setRetryPolicy(new DefaultRetryPolicy(10 * 60 * 1000, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+		setShouldCache(false);
 	}
 
 

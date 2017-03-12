@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.Map;
 
 import lib.basenet.request.AbsRequest;
+import lib.basenet.utils.FileUtils;
 
 
 /**
@@ -71,6 +72,11 @@ public class VolleyRequest extends AbsRequest {
 			return;
 		}
 
+		// 如果是下载文件
+		if (mDownFile != null) {
+			down();
+		}
+
 		mRequest = new StringRequest(tReqType, tUrl, new Response.Listener<String>() {
 			@Override
 			public void onResponse(String response) {
@@ -112,6 +118,56 @@ public class VolleyRequest extends AbsRequest {
 		} else {
 			mRequest.setRetryPolicy(new DefaultRetryPolicy((int) DEFAULT_TIME_OUT, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 		}
+		mRequest.setTag(mTag);
+		requestQueue.add(mRequest);
+	}
+
+	/**
+	 * 下载文件
+	 */
+	private void down() {
+		mRequest = new DownRequest(Request.Method.GET, mUrl, new Response.ErrorListener() {
+			@Override
+			public void onErrorResponse(VolleyError error) {
+				if (mCallBack != null) {
+					mCallBack.onFailure(error);
+				}
+			}
+		}, new Response.Listener<byte[]>() {
+			@Override
+			public void onResponse(byte[] response) {
+				try {
+					FileUtils.saveFile(response, mDownFile);
+					if (mCallBack != null) {
+						mCallBack.onSuccess(response);
+					}
+				} catch (Exception e) {
+					if (mCallBack != null) {
+						mCallBack.onFailure(e);
+					}
+				}
+			}
+		}) {
+			@Override
+			public Map<String, String> getHeaders() throws AuthFailureError {
+				Map<String, String> superHeader = super.getHeaders();
+				if (mHeader != null && mHeader.size() > 0) {
+					superHeader = mHeader;
+				}
+				return superHeader;
+			}
+
+			// 设置Body参数
+			@Override
+			protected Map<String, String> getParams() throws AuthFailureError {
+				Map<String, String> tParams = super.getParams();
+				if (mParams != null && mParams.size() > 0) {
+					tParams = mParams;
+				}
+				return tParams;
+			}
+		};
+
 		mRequest.setTag(mTag);
 		requestQueue.add(mRequest);
 	}
