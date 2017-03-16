@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="basenet.better.basenet">
+<manifest package="basenet.better.basenet"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -14,15 +14,39 @@
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name=".VolleyActivity"
-            android:label="@string/title_activity_volley" />
-        <activity android:name=".OkHttpActivity"></activity>
+            android:label="@string/title_activity_volley"/>
+        <activity android:name=".OkHttpActivity"/>
+        <activity android:name=".volley.VolleyGetActivity"/>
+        <activity
+            android:name=".volley.VolleyTimeoutActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".volley.VolleyCancelActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".okhttp.OkhttpGetActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".okhttp.OkhttpTimeoutActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".okhttp.OkhttpCancellActivity"
+            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".okhttp.OkhttpUploadActivity"
+            android:windowSoftInputMode="stateHidden">
+
+        </activity>
+        <activity
+            android:name=".okhttp.OkhttpDownActivity"
+            android:windowSoftInputMode="stateHidden"/>
     </application>
 
 </manifest>

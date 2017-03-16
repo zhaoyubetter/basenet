@@ -1,0 +1,182 @@
+private void upload() {
+		Map<String, String> params = new HashMap<>();
+		params.put("key1", "value1");
+		params.put("key2", "value2");
+
+		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(absolutePath + "/DCIM/Camera/11.jpg");
+
+		Map<String, File> uploadFiles = new HashMap<>();
+		uploadFiles.put("image", file);
+
+		final AbsRequest.Builder builder = new VolleyRequest.Builder(getApplicationContext());
+		builder.url("http://192.168.0.108:8080/myTestWeb/UploadServlet")
+				.type(AbsRequest.RequestType.POST).callback(new AbsRequestCallBack() {
+			@Override
+			public void onSuccess(final Response o) {
+				super.onSuccess(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(o.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(final Throwable e) {
+				super.onFailure(e);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(e.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onProgressUpdate(long contentLength, long bytesRead, boolean done) {
+				super.onProgressUpdate(contentLength, bytesRead, done);
+			}
+		})
+				.body(params).uploadFiles(uploadFiles).build().request();
+	}
+
+	private void down() {
+		String imgUrl = "http://192.168.0.108:8080/myTestWeb/DownServlet";
+		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(absolutePath + "/4456.jpg");
+		new VolleyRequest.Builder(getApplicationContext()).url(imgUrl).downFile(file).callback(new AbsRequestCallBack() {
+			@Override
+			public void onSuccess(final Response o) {
+				super.onSuccess(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + o.responseBody.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(final Throwable e) {
+				super.onFailure(e);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + e.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+				super.onProgressUpdate(contentLength, bytesRead, done);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(String.format("total:%s, already:%s, isDone: %s", contentLength, bytesRead, done));
+
+					}
+				});
+			}
+		}).build().request();
+	}
+
+
+
+
+=================
+=================
+
+/**
+	 * 下载测试
+	 */
+	public void downLoadTest() {
+		String imgUrl = "http://192.168.0.108:8080/myTestWeb/DownServlet";
+		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(absolutePath + "/bb.apk");
+		new OkHttpRequest.Builder().url(imgUrl).downFile(file).callback(new AbsRequestCallBack() {
+			@Override
+			public void onSuccess(final Response o) {
+				super.onSuccess(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + o.responseBody.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(final Throwable e) {
+				super.onFailure(e);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + e.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+				super.onProgressUpdate(contentLength, bytesRead, done);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(String.format("total:%s, already:%s, isDone: %s", contentLength, bytesRead, done));
+
+					}
+				});
+			}
+		}).build().request();
+	}
+
+	public void uploadTest() {
+		Map<String, String> headers = new HashMap<>();
+		Map<String, String> params = new HashMap<>();
+
+		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(absolutePath + "/");
+
+		Map<String, File> uploadFiles = new HashMap<>();
+		uploadFiles.put("image", file);
+
+
+		new OkHttpRequest.Builder().uploadFiles(uploadFiles).headers(headers).body(params).type(IRequest.RequestType.POST).
+				url("http://192.168.0.108:8080/myTestWeb/UploadServlet").callback(new AbsRequestCallBack() {
+			@Override
+			public void onSuccess(final Response o) {
+				super.onSuccess(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + o.responseBody.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onFailure(final Throwable o) {
+				super.onFailure(o);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(result.getText() + "\n" + o.toString());
+					}
+				});
+			}
+
+			@Override
+			public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+				super.onProgressUpdate(contentLength, bytesRead, done);
+				result.post(new Runnable() {
+					@Override
+					public void run() {
+						result.setText(String.format("total:%s, already:%s, isDone: %s", contentLength, bytesRead, done));
+
+					}
+				});
+			}
+		}).build().request();
