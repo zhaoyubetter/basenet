@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -77,14 +78,7 @@ public class VolleyRequest extends AbsRequest {
 			down();
 		}
 
-		mRequest = new StringRequest(tReqType, tUrl, new Response.Listener<String>() {
-			@Override
-			public void onResponse(String response) {
-				if (mCallBack != null) {
-					mCallBack.onSuccess(response);
-				}
-			}
-		}, new Response.ErrorListener() {
+		mRequest = new StringRequest(tReqType, tUrl, null, new Response.ErrorListener() {
 			@Override
 			public void onErrorResponse(VolleyError error) {
 				if (mCallBack != null) {
@@ -110,10 +104,19 @@ public class VolleyRequest extends AbsRequest {
 				}
 				return tParams;
 			}
+
+			@Override
+			protected Response<String> parseNetworkResponse(NetworkResponse response) {
+				Response<String> stringResponse = super.parseNetworkResponse(response);
+				if (mCallBack != null) {
+					mCallBack.onSuccess(new lib.basenet.response.Response(VolleyRequest.this, response.headers, stringResponse.result));
+				}
+				return stringResponse;
+			}
 		};
 
 		// 设置此次请求超时时间
-		if (mTimeOut > 1000) {
+		if (mTimeOut >= 1000) {
 			mRequest.setRetryPolicy(new DefaultRetryPolicy((int) mTimeOut, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 		} else {
 			mRequest.setRetryPolicy(new DefaultRetryPolicy((int) DEFAULT_TIME_OUT, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
@@ -133,21 +136,7 @@ public class VolleyRequest extends AbsRequest {
 					mCallBack.onFailure(error);
 				}
 			}
-		}, new Response.Listener<byte[]>() {
-			@Override
-			public void onResponse(byte[] response) {
-				try {
-					FileUtils.saveFile(response, mDownFile);
-					if (mCallBack != null) {
-						mCallBack.onSuccess(response);
-					}
-				} catch (Exception e) {
-					if (mCallBack != null) {
-						mCallBack.onFailure(e);
-					}
-				}
-			}
-		}) {
+		}, null) {
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {
 				Map<String, String> superHeader = super.getHeaders();
@@ -166,6 +155,23 @@ public class VolleyRequest extends AbsRequest {
 				}
 				return tParams;
 			}
+
+			@Override
+			protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
+				Response<byte[]> resultResponse = super.parseNetworkResponse(response);
+				try {
+					FileUtils.saveFile(resultResponse.result, mDownFile);
+					if (null != mCallBack) {
+						mCallBack.onSuccess(new lib.basenet.response.Response(VolleyRequest.this, response.headers, resultResponse.result));
+
+					}
+				} catch (Exception e) {
+					if (mCallBack != null) {
+						mCallBack.onFailure(e);
+					}
+				}
+				return resultResponse;
+			}
 		};
 
 		mRequest.setTag(mTag);
@@ -183,14 +189,7 @@ public class VolleyRequest extends AbsRequest {
 					mCallBack.onFailure(error);
 				}
 			}
-		}, new Response.Listener<String>() {
-			@Override
-			public void onResponse(String response) {
-				if (mCallBack != null) {
-					mCallBack.onSuccess(response);
-				}
-			}
-		}) {
+		}, null) {
 			@Override
 			public Map<String, String> getHeaders() throws AuthFailureError {
 				Map<String, String> superHeader = super.getHeaders();
@@ -213,6 +212,16 @@ public class VolleyRequest extends AbsRequest {
 			@Override
 			public Map<String, File> getUploadFiles() {
 				return mUploadFiles;
+			}
+
+			@Override
+			protected Response<String> parseNetworkResponse(NetworkResponse response) {
+				Response<String> stringResponse = super.parseNetworkResponse(response);
+				if (null != mCallBack) {
+					mCallBack.onSuccess(new lib.basenet.response.Response(VolleyRequest.this, response.headers, stringResponse.result));
+
+				}
+				return stringResponse;
 			}
 		};
 

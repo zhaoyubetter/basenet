@@ -42,6 +42,10 @@ class PostUploadRequest extends Request<String> {
 		}
 	}
 
+	/**
+	 * 获取要上传的文件
+	 * @return
+	 */
 	public Map<String, File> getUploadFiles() {
 		return null;
 	}
