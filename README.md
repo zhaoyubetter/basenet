@@ -3,7 +3,15 @@
 - 上传下载文件，可使用Okhttp, volley 不支持大文件的上传下载；
 - 暂没有考虑缓存实现；
 - 暂没有考虑https与重定向；
-# 使用volley请求网络
+
+# 更新日志 -- 2017-03-26
+- 新增tag标签 v0.0.1;
+- 新增网络回调到主线程；
+- response类新增 http 状态码字段；
+- 去掉全部volley代码（可从 v0.0.1 tag中查看）
+
+
+# ~~使用volley请求网络（废弃）~~
 ```java
  new VolleyRequest.Builder(getApplication()).url("https://www.github.com")
 				.type(AbsRequest.RequestType.GET)
@@ -43,11 +51,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
 					@Override
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
 								Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-							}
 						});
 					}
 				}).build().request();
@@ -70,24 +74,14 @@ new OkHttpRequest.Builder().url("https://www.github.com")
 					@Override
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
+						error.setText(e.toString());
 					}
 
 					@Override
 					public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
 						super.onProgressUpdate(contentLength, bytesRead, done);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
-								progressTV.setText(contentLength + "/" + bytesRead);
-							}
-						});
+						progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
+						progressTV.setText(contentLength + "/" + bytesRead);
 					}
 				})
 				.build().request();
@@ -112,28 +106,21 @@ new OkHttpRequest.Builder().url("https://www.github.com")
 					@Override
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
+						error.setText(e.toString());
 					}
 
 					@Override
 					public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
 						super.onProgressUpdate(contentLength, bytesRead, done);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
-								progressTV.setText(contentLength + "/" + bytesRead);
-							}
-						});
+						progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
+						progressTV.setText(contentLength + "/" + bytesRead);
 					}
 				})
 				.build().request();
   ```
-  
+
+  # gradle构建依赖:
+  compile 'com.github.lib:basenet:0.0.1'
+
   # 其他(一些实例请参考 app 的例子代码)
  
