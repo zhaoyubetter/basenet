@@ -88,7 +88,9 @@ public class OkHttpRequest extends AbsRequest {
 						} catch (IOException e) {
 							mCallBack.onFailure(e);
 						}
-						mCallBack.onSuccess(new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile));
+						lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+						myResponse.statusCode = response.code();
+						mCallBack.onSuccess(myResponse);
 					} else {
 						mCallBack.onFailure(new Exception(response.code() + " " + response.message()));
 					}
@@ -142,7 +144,9 @@ public class OkHttpRequest extends AbsRequest {
 					if (response.isSuccessful()) {
 						isSuccess = true;
 						returnBody = response.body().string();    // 字符串响应体
-						mCallBack.onSuccess(new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody));
+						lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+						myResponse.statusCode = response.code();
+						mCallBack.onSuccess(myResponse);
 					} else {
 						isSuccess = false;
 						returnBody = response.code() + " " + response.message();

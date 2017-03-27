@@ -109,7 +109,9 @@ public class VolleyRequest extends AbsRequest {
 			protected Response<String> parseNetworkResponse(NetworkResponse response) {
 				Response<String> stringResponse = super.parseNetworkResponse(response);
 				if (mCallBack != null) {
-					mCallBack.onSuccess(new lib.basenet.response.Response(VolleyRequest.this, response.headers, stringResponse.result));
+					lib.basenet.response.Response myResponse = new lib.basenet.response.Response(VolleyRequest.this, response.headers, stringResponse.result);
+					myResponse.statusCode = response.statusCode;
+					mCallBack.onSuccess(myResponse);
 				}
 				return stringResponse;
 			}
