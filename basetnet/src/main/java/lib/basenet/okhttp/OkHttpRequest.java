@@ -1,6 +1,9 @@
 package lib.basenet.okhttp;
 
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +35,10 @@ public class OkHttpRequest extends AbsRequest {
 	private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("media/type");
 
 	private Call mCall;
+	/**
+	 * deliverHandler
+	 */
+	private Handler mDeliverHandler = new Handler(Looper.getMainLooper());
 
 	static {
 		final OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -46,6 +53,15 @@ public class OkHttpRequest extends AbsRequest {
 	}
 
 	/**
+	 * 主线程中回调
+	 *
+	 * @param runnable
+	 */
+	private void deliverCallBack(final Runnable runnable) {
+		mDeliverHandler.post(runnable);
+	}
+
+	/**
 	 * 下载文件
 	 */
 	private void downFile() {
@@ -57,9 +73,14 @@ public class OkHttpRequest extends AbsRequest {
 				return originalResponse.newBuilder()
 						.body(new ProgressResponseBody(originalResponse.body(), new ProgressCallback() {
 							@Override
-							public void update(long contentLength, long bytesRead, boolean done) {
+							public void update(final long contentLength, final long bytesRead, final boolean done) {
 								if (null != mCallBack) {
-									mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+									deliverCallBack(new Runnable() {
+										@Override
+										public void run() {
+											mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+										}
+									});
 								}
 							}
 						})).build();
@@ -71,28 +92,48 @@ public class OkHttpRequest extends AbsRequest {
 			Map<String, String> headerMap = null;            // 响应头
 
 			@Override
-			public void onFailure(Call call, IOException e) {
+			public void onFailure(final Call call, final IOException e) {
 				if (null != mCallBack) {
-					mCallBack.onFailure(e);
+					deliverCallBack(new Runnable() {
+						@Override
+						public void run() {
+							mCallBack.onFailure(e);
+						}
+					});
 				}
 			}
 
 			@Override
-			public void onResponse(Call call, Response response) {
+			public void onResponse(final Call call, final Response response) {
 				if (null != mCallBack) {
 					headerMap = getResponseHeaders(response);
 					if (response.isSuccessful()) {
 						InputStream inputStream = response.body().byteStream();
 						try {
 							FileUtils.saveFile(inputStream, mDownFile);
-						} catch (IOException e) {
-							mCallBack.onFailure(e);
+						} catch (final IOException e) {
+							deliverCallBack(new Runnable() {
+								@Override
+								public void run() {
+									mCallBack.onFailure(e);
+								}
+							});
 						}
-						lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+						final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
 						myResponse.statusCode = response.code();
-						mCallBack.onSuccess(myResponse);
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onSuccess(myResponse);
+							}
+						});
 					} else {
-						mCallBack.onFailure(new Exception(response.code() + " " + response.message()));
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onFailure(new Exception(response.code() + " " + response.message()));
+							}
+						});
 					}
 				}
 			}
@@ -131,9 +172,14 @@ public class OkHttpRequest extends AbsRequest {
 			String returnBody = null;                        // 响应体
 
 			@Override
-			public void onFailure(Call call, IOException e) {
+			public void onFailure(Call call, final IOException e) {
 				if (null != mCallBack) {
-					mCallBack.onFailure(e);
+					deliverCallBack(new Runnable() {
+						@Override
+						public void run() {
+							mCallBack.onFailure(e);
+						}
+					});
 				}
 			}
 
@@ -144,13 +190,23 @@ public class OkHttpRequest extends AbsRequest {
 					if (response.isSuccessful()) {
 						isSuccess = true;
 						returnBody = response.body().string();    // 字符串响应体
-						lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+						final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
 						myResponse.statusCode = response.code();
-						mCallBack.onSuccess(myResponse);
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onSuccess(myResponse);
+							}
+						});
 					} else {
 						isSuccess = false;
 						returnBody = response.code() + " " + response.message();
-						mCallBack.onFailure(new Exception(returnBody));
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onFailure(new Exception(returnBody));
+							}
+						});
 					}
 				}
 			}
@@ -209,8 +265,14 @@ public class OkHttpRequest extends AbsRequest {
 			if (null != mCallBack) {
 				final ProgressRequestBody progressRequestBody = new ProgressRequestBody(requestBody, new ProgressCallback() {
 					@Override
-					public void update(long contentLength, long bytesRead, boolean done) {
-						mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+					public void update(final long contentLength, final long bytesRead, final boolean done) {
+
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+							}
+						});
 					}
 				});
 				requestBody = progressRequestBody;
