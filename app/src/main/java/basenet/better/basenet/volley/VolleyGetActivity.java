@@ -7,15 +7,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Map;
 
 import basenet.better.basenet.R;
-import lib.basenet.request.AbsRequest;
-import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
-import lib.basenet.volley.VolleyRequest;
 
 public class VolleyGetActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -48,27 +44,27 @@ public class VolleyGetActivity extends AppCompatActivity implements View.OnClick
 		header.setText("");
 		content.setText("");
 
-		new VolleyRequest.Builder(getApplication()).url(url.getText().toString())
-				.type(AbsRequest.RequestType.GET)
-				.callback(new AbsRequestCallBack<String>() {
-					@Override
-					public void onSuccess(final Response<String> response) {
-						super.onSuccess(response);
-						showHeader(response);
-						showBody(response);
-					}
-
-					@Override
-					public void onFailure(final Throwable e) {
-						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-							}
-						});
-					}
-				}).build().request();
+//		new VolleyRequest.Builder(getApplication()).url(url.getText().toString())
+//				.type(AbsRequest.RequestType.GET)
+//				.callback(new AbsRequestCallBack<String>() {
+//					@Override
+//					public void onSuccess(final Response<String> response) {
+//						super.onSuccess(response);
+//						showHeader(response);
+//						showBody(response);
+//					}
+//
+//					@Override
+//					public void onFailure(final Throwable e) {
+//						super.onFailure(e);
+//						runOnUiThread(new Runnable() {
+//							@Override
+//							public void run() {
+//								Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+//							}
+//						});
+//					}
+//				}).build().request();
 	}
 
 	private void showHeader(final Response<String> response) {

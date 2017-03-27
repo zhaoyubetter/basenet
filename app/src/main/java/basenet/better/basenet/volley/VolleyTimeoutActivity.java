@@ -11,10 +11,7 @@ import android.widget.TextView;
 import java.util.Map;
 
 import basenet.better.basenet.R;
-import lib.basenet.request.AbsRequest;
-import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
-import lib.basenet.volley.VolleyRequest;
 
 public class VolleyTimeoutActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -57,27 +54,27 @@ public class VolleyTimeoutActivity extends AppCompatActivity implements View.OnC
 
 		long time = Integer.parseInt(timeout.getText().toString()) * 1000;
 
-		new VolleyRequest.Builder(getApplication()).url(url.getText().toString())
-				.type(AbsRequest.RequestType.GET).timeout(time)
-				.callback(new AbsRequestCallBack<String>() {
-					@Override
-					public void onSuccess(final Response<String> response) {
-						super.onSuccess(response);
-						showHeader(response);
-						showBody(response);
-					}
-
-					@Override
-					public void onFailure(final Throwable e) {
-						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
-					}
-				}).build().request();
+//		new VolleyRequest.Builder(getApplication()).url(url.getText().toString())
+//				.type(AbsRequest.RequestType.GET).timeout(time)
+//				.callback(new AbsRequestCallBack<String>() {
+//					@Override
+//					public void onSuccess(final Response<String> response) {
+//						super.onSuccess(response);
+//						showHeader(response);
+//						showBody(response);
+//					}
+//
+//					@Override
+//					public void onFailure(final Throwable e) {
+//						super.onFailure(e);
+//						runOnUiThread(new Runnable() {
+//							@Override
+//							public void run() {
+//								error.setText(e.toString());
+//							}
+//						});
+//					}
+//				}).build().request();
 	}
 
 	private void showHeader(final Response<String> response) {

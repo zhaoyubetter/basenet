@@ -12,9 +12,7 @@ import java.util.Map;
 
 import basenet.better.basenet.R;
 import lib.basenet.request.AbsRequest;
-import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
-import lib.basenet.volley.VolleyRequest;
 
 /**
  *
@@ -76,31 +74,31 @@ public class VolleyCancelActivity extends AppCompatActivity implements View.OnCl
 		// String myUrl = "http://10.0.2.11:8080/myTestWeb/TestServlet";
 
 		// 需要设置tag
-		request = new VolleyRequest.Builder(getApplication()).url(
-				/*myUrl*/
-				url.getText().toString()
-		)
-				.type(AbsRequest.RequestType.GET).timeout(time).tag(TAG)
-				.callback(new AbsRequestCallBack<String>() {
-					@Override
-					public void onSuccess(final Response<String> response) {
-						super.onSuccess(response);
-						showHeader(response);
-						showBody(response);
-					}
-
-					@Override
-					public void onFailure(final Throwable e) {
-						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
-					}
-				}).build();
-		request.request();
+//		request = new VolleyRequest.Builder(getApplication()).url(
+//				/*myUrl*/
+//				url.getText().toString()
+//		)
+//				.type(AbsRequest.RequestType.GET).timeout(time).tag(TAG)
+//				.callback(new AbsRequestCallBack<String>() {
+//					@Override
+//					public void onSuccess(final Response<String> response) {
+//						super.onSuccess(response);
+//						showHeader(response);
+//						showBody(response);
+//					}
+//
+//					@Override
+//					public void onFailure(final Throwable e) {
+//						super.onFailure(e);
+//						runOnUiThread(new Runnable() {
+//							@Override
+//							public void run() {
+//								error.setText(e.toString());
+//							}
+//						});
+//					}
+//				}).build();
+//		request.request();
 	}
 
 	private void showHeader(final Response<String> response) {
