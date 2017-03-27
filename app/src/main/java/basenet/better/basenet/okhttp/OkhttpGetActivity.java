@@ -61,12 +61,7 @@ public class OkhttpGetActivity extends AppCompatActivity implements View.OnClick
 					@Override
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-							}
-						});
+						Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
 					}
 				}).build().request();
 	}
@@ -78,23 +73,13 @@ public class OkhttpGetActivity extends AppCompatActivity implements View.OnClick
 				sb.append(entry.getKey() + ": " + entry.getValue()).append("\n");
 			}
 
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					header.setText(sb.toString());
-				}
-			});
+			header.setText(sb.toString());
 		}
 	}
 
 	private void showBody(final Response<String> response) {
 		if (response.responseBody != null) {
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					content.setText(response.responseBody);
-				}
-			});
+			content.setText(response.responseBody);
 		}
 	}
 
