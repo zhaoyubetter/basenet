@@ -30,6 +30,7 @@ public class Response<T> {
 	 */
 	public int statusCode;
 
+
 	public Response(AbsRequest request, Map<String, String> headerMap, T body) {
 		this.request = request;
 		this.responseHeader = headerMap;
