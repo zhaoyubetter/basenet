@@ -3,6 +3,7 @@ package lib.basenet.okhttp;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,8 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import lib.basenet.config.NetConfig;
+import lib.basenet.okhttp.cache.NetCacheInterceptor;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.utils.FileUtils;
+import okhttp3.Cache;
+import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
@@ -42,9 +47,17 @@ public class OkHttpRequest extends AbsRequest {
 
 	static {
 		final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-		builder.connectTimeout(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
-		builder.readTimeout(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
-		builder.writeTimeout(DEFAULT_TIME_OUT, TimeUnit.MILLISECONDS);
+		builder.connectTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.readTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.writeTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
+
+		/* ==设置拦截器== */
+		// 设置缓存
+		File cacheDir = new File(NetConfig.getCacheDir());
+		Cache cache = new Cache(cacheDir, NetConfig.getCacheSize());
+		builder.cache(cache)
+		.addNetworkInterceptor(new NetCacheInterceptor());        // 设置缓存拦截器 一刀切
+
 		sOkHttpClient = builder.build();
 	}
 
@@ -146,9 +159,9 @@ public class OkHttpRequest extends AbsRequest {
 			return;
 		}
 
-		// 判断此次请求，超时时间是否不同，如果不同，创建 Client
+		// 判断此次请求，超时时间是否不同，如果不同，copy Client
 		OkHttpClient tClient = sOkHttpClient;
-		if (mTimeOut >= 1000 && mTimeOut != DEFAULT_TIME_OUT) {
+		if (mTimeOut >= 10 && mTimeOut != NetConfig.getTimeOut()) {
 			final OkHttpClient.Builder builder = sOkHttpClient.newBuilder().connectTimeout(mTimeOut, TimeUnit.MILLISECONDS).readTimeout(mTimeOut, TimeUnit.MILLISECONDS)
 					.writeTimeout(mTimeOut, TimeUnit.MILLISECONDS);
 			tClient = builder.build();
@@ -163,7 +176,11 @@ public class OkHttpRequest extends AbsRequest {
 			}
 		}
 
+		// request 缓存设置
+		setCache(tBuilder);
+
 		final Request request = tBuilder.build();       // 创建request
+
 		// 走异步
 		mCall = tClient.newCall(request);
 		mCall.enqueue(new Callback() {
@@ -192,6 +209,9 @@ public class OkHttpRequest extends AbsRequest {
 						returnBody = response.body().string();    // 字符串响应体
 						final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
 						myResponse.statusCode = response.code();
+						Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
+						Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
+						myResponse.isFromCache = response.networkResponse() == null;
 						deliverCallBack(new Runnable() {
 							@Override
 							public void run() {
@@ -211,6 +231,19 @@ public class OkHttpRequest extends AbsRequest {
 				}
 			}
 		});
+	}
+
+	/**
+	 * 设置缓存
+	 */
+	private void setCache(final Request.Builder tBuilder) {
+		if (mIsForceRefresh) {          // 强制刷新，从网络上获取
+			tBuilder.cacheControl(CacheControl.FORCE_NETWORK).build();
+		} else if (mCacheTime > 0) {    // 设置缓存时间  注意：当重复请求时，缓存的起点时间是第一个请求成功的时间
+			tBuilder.cacheControl(new CacheControl.Builder().maxAge(mCacheTime, TimeUnit.SECONDS).build()).build();
+		} else {    // 不缓存,也不存储
+			tBuilder.cacheControl(new CacheControl.Builder().noCache().noStore().build()).build();
+		}
 	}
 
 	@Override

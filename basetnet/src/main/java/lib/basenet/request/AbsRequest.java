@@ -22,11 +22,6 @@ public abstract class AbsRequest implements IRequest {
 	public static final String CHAR_SET = "UTF-8";
 
 	/**
-	 * 默认请求超时时间 10s
-	 */
-	public static final long DEFAULT_TIME_OUT = 10 * 1000;
-
-	/**
 	 * url 地址
 	 */
 	protected String mUrl;
@@ -71,6 +66,15 @@ public abstract class AbsRequest implements IRequest {
 	 */
 	protected File mDownFile;
 
+	/**
+	 * 缓存时间,秒为单位
+	 */
+	protected int mCacheTime;
+	/**
+	 * 是否强制刷新，不管有没有缓存，都从网络获取
+	 */
+	protected boolean mIsForceRefresh = false;
+
 	public String getUrl() {
 		return mUrl;
 	}
@@ -107,6 +111,14 @@ public abstract class AbsRequest implements IRequest {
 		return mDownFile;
 	}
 
+	public int getCacheTime() {
+		return mCacheTime;
+	}
+
+	public boolean ismIsForceRefresh() {
+		return mIsForceRefresh;
+	}
+
 	protected AbsRequest(Builder builder) {
 		this.mUrl = builder.mUrl;
 		this.mCallBack = builder.mCallBack;
@@ -117,6 +129,8 @@ public abstract class AbsRequest implements IRequest {
 		this.mHeader = builder.mHeader;
 		this.mUploadFiles = builder.mUploadFiles;
 		this.mDownFile = builder.mDownFile;
+		this.mCacheTime = builder.mCacheTime;
+		this.mIsForceRefresh = builder.mIsForceRefresh;
 	}
 
 	@Override
@@ -215,6 +229,15 @@ public abstract class AbsRequest implements IRequest {
 		 */
 		private File mDownFile;
 
+		/**
+		 * 缓存时间,秒为单位
+		 */
+		private int mCacheTime;
+		/**
+		 * 是否强制刷新，不管有没有缓存，都从网络获取
+		 */
+		private boolean mIsForceRefresh = false;
+
 		public Builder() {
 
 		}
@@ -265,6 +288,21 @@ public abstract class AbsRequest implements IRequest {
 
 		public Builder downFile(File downFile) {
 			this.mDownFile = downFile;
+			return this;
+		}
+
+		/**
+		 * 设置缓存时间，秒为单位
+		 *
+		 * @return
+		 */
+		public Builder cacheTime(int cacheTime) {
+			this.mCacheTime = cacheTime;
+			return this;
+		}
+
+		public Builder forceRefresh(boolean forceRefresh) {
+			this.mIsForceRefresh = forceRefresh;
 			return this;
 		}
 
