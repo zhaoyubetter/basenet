@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def VERSION = '0.0.1'
+def VERSION = '0.0.2'
 
 android {
     compileSdkVersion 25
@@ -32,13 +32,12 @@ publish {
     userOrg = 'zhaoyubetter'//bintray.com用户名
     groupId = 'com.github.lib'//jcenter上的路径
     artifactId = 'basenet'//项目名称
-    publishVersion = '0.0.1'//版本号
+    publishVersion = VERSION //版本号
     desc = '使用okhttp封装了基本的网络请求'//描述，不重要
     website = 'https://github.com/zhaoyubetter/basenet'//网站，不重要
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    // compile 'com.mcxiaoke.volley:library:1.0.19'
     compile 'com.squareup.okhttp3:okhttp:3.6.0'
 }
