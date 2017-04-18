@@ -89,12 +89,7 @@ public class OkhttpCancellActivity extends AppCompatActivity implements View.OnC
 					@Override
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
+						error.setText(e.toString());
 					}
 				}).build();
 		request.request();
@@ -107,23 +102,13 @@ public class OkhttpCancellActivity extends AppCompatActivity implements View.OnC
 				sb.append(entry.getKey() + ": " + entry.getValue()).append("\n");
 			}
 
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					header.setText(sb.toString());
-				}
-			});
+			header.setText(sb.toString());
 		}
 	}
 
 	private void showBody(final Response<String> response) {
 		if (response.responseBody != null) {
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					content.setText(response.responseBody);
-				}
-			});
+			content.setText(response.responseBody);
 		}
 	}
 

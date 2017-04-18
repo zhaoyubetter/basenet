@@ -40,5 +40,11 @@
         android:layout_height="wrap_content"
         android:text="下载文件测试"/>
 
+    <Button
+        android:id="@+id/cache"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="缓存测试"/>
+
 </LinearLayout>
 

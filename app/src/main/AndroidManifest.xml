@@ -47,6 +47,10 @@
         <activity
             android:name=".okhttp.OkhttpDownActivity"
             android:windowSoftInputMode="stateHidden"/>
+
+        <activity
+            android:name=".okhttp.OkhttpCacheActivity"
+            android:windowSoftInputMode="stateHidden"/>
     </application>
 
 </manifest>
