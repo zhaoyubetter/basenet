@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import lib.basenet.config.NetConfig;
 import lib.basenet.okhttp.cache.NetCacheInterceptor;
+import lib.basenet.okhttp.cache.PostCacheInterceptor;
+import lib.basenet.okhttp.log.LoggerInterceptor;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.utils.FileUtils;
 import okhttp3.Cache;
@@ -39,6 +41,9 @@ public class OkHttpRequest extends AbsRequest {
 	private static final OkHttpClient sOkHttpClient;
 	private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("media/type");
 
+	/**
+	 * 记录Call，方便取消
+	 */
 	private Call mCall;
 	/**
 	 * deliverHandler
@@ -47,16 +52,24 @@ public class OkHttpRequest extends AbsRequest {
 
 	static {
 		final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-		builder.connectTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
-		builder.readTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
-		builder.writeTimeout(NetConfig.getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.connectTimeout(NetConfig.getInstance().getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.readTimeout(NetConfig.getInstance().getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.writeTimeout(NetConfig.getInstance().getTimeOut(), TimeUnit.MILLISECONDS);
 
 		/* ==设置拦截器== */
 		// 设置缓存
-		File cacheDir = new File(NetConfig.getCacheDir());
-		Cache cache = new Cache(cacheDir, NetConfig.getCacheSize());
-		builder.cache(cache)
-		.addNetworkInterceptor(new NetCacheInterceptor());        // 设置缓存拦截器 一刀切
+		File cacheDir = new File(NetConfig.getInstance().getCacheDir());
+		// GET 形式缓存设置
+		Cache cache = new Cache(cacheDir, NetConfig.getInstance().getCacheSize());
+		builder.cache(cache).addNetworkInterceptor(new NetCacheInterceptor());        // 设置缓存拦截器
+		// 日志拦截
+		if (NetConfig.getInstance().isDebug()) {
+			builder.addInterceptor(new LoggerInterceptor());
+		}
+		// 是否允许POST 形式缓存设置
+		if (NetConfig.getInstance().isEnablePostCache()) {
+			builder.addInterceptor(new PostCacheInterceptor());
+		}
 
 		sOkHttpClient = builder.build();
 	}
@@ -161,7 +174,7 @@ public class OkHttpRequest extends AbsRequest {
 
 		// 判断此次请求，超时时间是否不同，如果不同，copy Client
 		OkHttpClient tClient = sOkHttpClient;
-		if (mTimeOut >= 10 && mTimeOut != NetConfig.getTimeOut()) {
+		if (mTimeOut >= 10 && mTimeOut != NetConfig.getInstance().getTimeOut()) {
 			final OkHttpClient.Builder builder = sOkHttpClient.newBuilder().connectTimeout(mTimeOut, TimeUnit.MILLISECONDS).readTimeout(mTimeOut, TimeUnit.MILLISECONDS)
 					.writeTimeout(mTimeOut, TimeUnit.MILLISECONDS);
 			tClient = builder.build();
@@ -209,6 +222,7 @@ public class OkHttpRequest extends AbsRequest {
 						returnBody = response.body().string();    // 字符串响应体
 						final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
 						myResponse.statusCode = response.code();
+						myResponse.message = response.message();
 						Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
 						Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
 						myResponse.isFromCache = response.networkResponse() == null;
@@ -237,11 +251,14 @@ public class OkHttpRequest extends AbsRequest {
 	 * 设置缓存
 	 */
 	private void setCache(final Request.Builder tBuilder) {
-		if (mIsForceRefresh) {          // 强制刷新，从网络上获取
-			tBuilder.cacheControl(CacheControl.FORCE_NETWORK).build();
-		} else if (mCacheTime > 0) {    // 设置缓存时间  注意：当重复请求时，缓存的起点时间是第一个请求成功的时间
+		if (mIsForceRefresh) {
+			// 1.情形一：强制刷新，从网络上获取(强制刷新时，如果有 mCacheTime，也马上缓存)
+			tBuilder.cacheControl(new CacheControl.Builder().maxAge(mCacheTime, TimeUnit.SECONDS).noCache().build()).build();
+		} else if (mCacheTime > 0) {
+			// 2.情形二：设置缓存时间  注意：当重复请求时，缓存的起点时间是第一次请求成功的时间
 			tBuilder.cacheControl(new CacheControl.Builder().maxAge(mCacheTime, TimeUnit.SECONDS).build()).build();
-		} else {    // 不缓存,也不存储
+		} else {
+			// 3.情形三（默认）：不缓存,也不存储 (如：用户登录接口、获取验证码等)
 			tBuilder.cacheControl(new CacheControl.Builder().noCache().noStore().build()).build();
 		}
 	}
@@ -334,6 +351,7 @@ public class OkHttpRequest extends AbsRequest {
 				headerMap.put(responseHeaders.name(i), responseHeaders.value(i));
 			}
 		}
+
 		return headerMap;
 	}
 
@@ -344,3 +362,5 @@ public class OkHttpRequest extends AbsRequest {
 		}
 	}
 }
+
+
