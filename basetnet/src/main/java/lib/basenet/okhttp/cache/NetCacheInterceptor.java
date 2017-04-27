@@ -58,12 +58,4 @@ public class NetCacheInterceptor implements Interceptor {
 				.header("Cache-control", "public, max-age=" + maxAge)
 				.build();
 	}
-
-
-	// 以下摘自 okhttp中的CacheInterceptor
-	private static Response stripBody(Response response) {
-		return response != null && response.body() != null
-				? response.newBuilder().body(null).build()
-				: response;
-	}
 }

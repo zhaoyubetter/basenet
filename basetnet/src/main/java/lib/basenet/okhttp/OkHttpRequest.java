@@ -3,7 +3,6 @@ package lib.basenet.okhttp;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -223,8 +222,8 @@ public class OkHttpRequest extends AbsRequest {
 						final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
 						myResponse.statusCode = response.code();
 						myResponse.message = response.message();
-						Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
-						Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
+						//Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
+						//Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
 						myResponse.isFromCache = response.networkResponse() == null;
 						deliverCallBack(new Runnable() {
 							@Override
