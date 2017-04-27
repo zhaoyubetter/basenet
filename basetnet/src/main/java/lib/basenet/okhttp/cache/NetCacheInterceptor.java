@@ -23,7 +23,7 @@ public class NetCacheInterceptor implements Interceptor {
 		// 从request获取是否能存储缓存
 		if (null != request.cacheControl() && !request.cacheControl().noStore()) {
 			// 是否有网络
-			boolean hasNet = NetworkUtils.hasNet(NetConfig.application);
+			boolean hasNet = NetworkUtils.hasNet(NetConfig.getInstance().getApplication());
 			// 原始响应
 			final Response originResponse;
 
