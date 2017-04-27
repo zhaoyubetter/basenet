@@ -1,8 +1,9 @@
 # basenet简介
 - 封装基本的网络请求，采用链式编程方案，底层实现使用的 Volley 和 Okhttp3.0；
 - 上传下载文件，可使用Okhttp, volley 不支持大文件的上传下载；
-- 暂没有考虑缓存实现；
-- 暂没有考虑https与重定向；
+- ~~暂没有考虑缓存实现；~~
+- 支持 缓存（GET 与 POST, 由客户端，酌情去配置缓存时间）;
+- https与gzip压缩有待测试；
 
 # 更新日志 -- 2017-03-26
 - 新增tag标签 v0.0.1;
@@ -195,7 +196,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
     		return ByteString.encodeUtf8(cUrl).md5().hex();
     	}
   ```
-  - 利用okhttp，应用层拦截器，如果是post时，询问缓存中，有则取出，并终止执行其他拦截器，
+  - 利用okhttp，应用层拦截器，如果是post时，询问缓存，有则取出，并终止执行其他拦截器，
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
