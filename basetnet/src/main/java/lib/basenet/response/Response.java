@@ -30,10 +30,16 @@ public class Response<T> {
 	 */
 	public int statusCode;
 
+
 	/**
 	 * 数据是否来自缓存
 	 */
 	public boolean isFromCache;
+
+	/**
+	 * http 消息
+	 */
+	public String message;
 
 	public Response(AbsRequest request, Map<String, String> headerMap, T body) {
 		this.request = request;
