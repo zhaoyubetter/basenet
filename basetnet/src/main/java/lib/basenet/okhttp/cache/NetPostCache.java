@@ -213,7 +213,7 @@ public final class NetPostCache implements Closeable, Flushable {
 			Buffer buffer = new Buffer();
 			try {
 				// 避免post重复，这里采用value来凭借，因key不好获取
-				// 如果有上传文件，此处为 ProgressRequestBody
+				// 如果有上传下载文件，此处为 ProgressRequestBody
 				if (request.body() instanceof MultipartBody) {
 					final List<MultipartBody.Part> parts = ((MultipartBody) request.body()).parts();
 					/**

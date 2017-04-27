@@ -33,11 +33,11 @@ public class PostCacheInterceptor implements Interceptor {
 	/**
 	 * 缓存Post请求
 	 */
-	NetPostCache mPostCache;
+	final NetPostCache mPostCache;
 
 	public PostCacheInterceptor() {
-		File cacheDir = new File(NetConfig.getCacheDir() + "/posts");
-		mPostCache = new NetPostCache(cacheDir, NetConfig.getCacheSize());
+		File cacheDir = new File(NetConfig.getInstance().getCacheDir() + "/post");
+		mPostCache = new NetPostCache(cacheDir, NetConfig.getInstance().getCacheSize());
 	}
 
 	@Override
