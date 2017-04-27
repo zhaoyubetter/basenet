@@ -11,6 +11,9 @@
     <!--
         http://publicobject.com/helloworld.txt
         http://httpbin.org/delay/0
+
+
+        http://10.0.2.11:8080/myTestWeb/PostServlet
     -->
 
     <EditText
@@ -18,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="输入url"
-        android:text="http://httpbin.org/delay/0"/>
+        android:text="http://10.0.2.11:8080/myTestWeb/PostServlet"/>
 
 
     <LinearLayout

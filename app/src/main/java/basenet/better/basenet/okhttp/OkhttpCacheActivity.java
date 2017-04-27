@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import basenet.better.basenet.R;
@@ -24,6 +25,22 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 	TextView message;
 	TextView header;
 	EditText cache_time;
+	TextView cache_info;
+	boolean mIsGet = true;
+
+	private void clear(String dir) {
+		File file = new File(dir);
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				File[] files = file.listFiles();
+				for (File f : files) {
+					clear(f.getAbsolutePath());
+				}
+			} else {
+				file.delete();
+			}
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,20 +50,14 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 		message = (TextView) findViewById(R.id.message);
 		cache_time = (EditText) findViewById(R.id.cache_time);
 		header = (TextView) findViewById(R.id.header);
+		cache_info = (TextView) findViewById(R.id.cache_info);
+
 		header.setMovementMethod(ScrollingMovementMethod.getInstance());
 		message.setMovementMethod(ScrollingMovementMethod.getInstance());
 		findViewById(R.id.clearCache).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				File file = new File(NetConfig.getCacheDir());
-				if (file.exists()) {
-					if (file.isDirectory()) {
-						File[] files = file.listFiles();
-						for (File f : files) {
-							f.delete();
-						}
-					}
-				}
+				clear(NetConfig.getCacheDir());
 			}
 		});
 
@@ -55,6 +66,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				clear();
 				getData(true);
+				setTitle("当前：" + (mIsGet ? "GET " : "POST") + " 强制刷新");
 			}
 		});
 
@@ -62,27 +74,41 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				clear();
+				mIsGet = true;
 				getData(false);
+				setTitle("当前：" + (mIsGet ? "GET " : "POST"));
 			}
 		});
 
 		findViewById(R.id.post).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				clear();
+				mIsGet = false;
+				getData(false);
+				setTitle("当前：" + (mIsGet ? "GET " : "POST"));
 			}
 		});
 	}
 
 	private void getData(boolean isforce) {
 		int cacheTime = Integer.parseInt(cache_time.getText().toString());
-		new OkHttpRequest.Builder().url(url.getText().toString()).cacheTime(cacheTime).type(AbsRequest.RequestType.GET).forceRefresh(isforce)
+		Map<String, String> params = new HashMap<>();
+		params.put("hello", "I'm better");
+		params.put("hello1", "I'm better");
+		params.put("hello5", "I'm better -- ");
+		new OkHttpRequest.Builder().url(url.getText().toString()).cacheTime(cacheTime).type(mIsGet ? AbsRequest.RequestType.GET : AbsRequest.RequestType.POST).body(params).forceRefresh(isforce)
 				.callback(new AbsRequestCallBack<String>() {
 					@Override
 					public void onSuccess(Response<String> response) {
 						super.onSuccess(response);
 						showHeader(response);
 						message.setText(response.responseBody);
-
+						if (response.isFromCache) {
+							cache_info.setText("来自缓存");
+						} else {
+							cache_info.setText("来自 -- 》 网络");
+						}
 					}
 
 					@Override
@@ -108,6 +134,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 	private void clear() {
 		header.setText("");
 		message.setText("");
+		cache_info.setText("");
 	}
 
 
