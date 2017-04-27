@@ -1,6 +1,7 @@
 package basenet.better.basenet.okhttp;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -57,7 +58,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 		findViewById(R.id.clearCache).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				clear(NetConfig.getCacheDir());
+				clear(NetConfig.getInstance().getCacheDir());
 			}
 		});
 
@@ -89,6 +90,12 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 				setTitle("当前：" + (mIsGet ? "GET " : "POST"));
 			}
 		});
+
+
+		// 全局配置NetConfig
+		NetConfig.init(new NetConfig.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
+				.debug(true).enablePostCache(true).timeout(10).app(getApplication())
+		);
 	}
 
 	private void getData(boolean isforce) {
