@@ -162,14 +162,14 @@ public final class NetConfig {
 		}
 
 		// 缓存目录
-		if (!TextUtils.isEmpty(builder.cacheDir)) {
+		if (null != builder.cacheDir && !TextUtils.isEmpty(builder.cacheDir)) {
 			cacheDir = builder.cacheDir;
 		} else {
 			File file = new File(application.getCacheDir(), "response");
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-			cacheDir = file.getAbsolutePath();
+			cacheDir = file.getAbsolutePath() + "/response";
 		}
 
 		// 缓存大小
@@ -240,7 +240,7 @@ public final class NetConfig {
 		 * @return
 		 */
 		public Builder cacheSize(int cacheSize) {
-			this.cacheSize = cacheSize;
+			this.cacheSize = cacheSize * 1024 * 1024;
 			return this;
 		}
 
@@ -273,7 +273,7 @@ public final class NetConfig {
 		 * @return
 		 */
 		public Builder timeout(int timeout) {
-			this.timeout = timeout;
+			this.timeout = timeout * 1000;
 			return this;
 		}
 
