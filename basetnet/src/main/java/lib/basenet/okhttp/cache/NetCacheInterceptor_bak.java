@@ -31,6 +31,7 @@ import static okhttp3.internal.Util.discard;
  * 缓存拦截
  * Created by zhaoyu on 2017/4/18.
  */
+@Deprecated
 public class NetCacheInterceptor_bak implements Interceptor {
 
 	File cacheDir = new File(NetConfig.getInstance().getCacheDir() + "/post");
