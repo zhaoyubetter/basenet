@@ -57,7 +57,7 @@ public final class NetConfig {
 	/**
 	 * 单例
 	 */
-	public static NetConfig instance;
+	private static NetConfig instance;
 
 	/**
 	 * 全局初始化,构建自己的 NetConfig 对象
