@@ -10,6 +10,11 @@
 - response类新增 http 状态码字段；
 - 去掉全部volley代码（可从 v0.0.1 tag中查看）
 
+--- 2017-04-27
+- 新增GET缓存策略；
+- 支持POST缓存；
+- 添加强制刷新功能；
+- 添加全局配置类
 
 # ~~使用volley请求网络（废弃）~~
 ```java
@@ -119,8 +124,82 @@ new OkHttpRequest.Builder().url("https://www.github.com")
 				.build().request();
   ```
 
+  ## NetConfig全局配置
+  ```java
+  // 全局配置NetConfig，设置缓存路径、允许使用post缓存等；
+  NetConfig.init(new NetConfig.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
+  		.debug(true).enablePostCache(true).timeout(10).app(getApplication())
+  );
+  ```
+  ## 缓存使用(客户端根据接口酌情配置)
+  - POST缓存与此类似，只是将类型改为 POST即可；
+  - 如果不需要缓存，不配置 cacheTime即可；
+  - 如果想要强制刷新，配置builder.forceRefresh(true), 即可从网络加载，强制加载完毕后，将刷新本地缓存记录；
+  - 注意：post 缓存时，因 唯一key，不好定位，只支持 请求参数为 键值对（key-value）form 表单形式，对于上传文件，下载文件形式的post，请求，一律无效；
+  ```java
+  // 缓存10s
+  new OkHttpRequest.Builder().url("https://www.jd.com").cacheTime(10).type(AbsRequest.RequestType.GET).body(params).
+  				.callback(new AbsRequestCallBack<String>() {
+  					@Override
+  					public void onSuccess(Response<String> response) {
+  						super.onSuccess(response);
+  						showHeader(response);
+  						message.setText(response.responseBody);
+  						if (response.isFromCache) {
+  							//cache_info.setText("来自缓存");
+  						} else {
+  							//cache_info.setText("来自 -- 》 网络");
+  						}
+  					}
+
+  					@Override
+  					public void onFailure(Throwable e) {
+  						super.onFailure(e);
+  						//message.setText(e.toString());
+
+  					}
+  				}).build().request();
+  ```
+
+  # post 缓存，实现原理：
+  - 利用okhttp cache.java 类，为参考，在存入 缓存时，去掉只支持GET形式，唯一key的生成如下
+  ```java
+	public static String key(Request request) {
+    		String cUrl = request.url().toString();
+    		if (request.body() != null) {
+    			Buffer buffer = new Buffer();
+    			try {
+    				// 避免post重复，这里采用value来凭借，因key不好获取
+    				// 如果有上传下载文件，此处为 ProgressRequestBody
+    				if (request.body() instanceof MultipartBody) {
+    					final List<MultipartBody.Part> parts = ((MultipartBody) request.body()).parts();
+    					/**
+    					 * 接受字符串格式的参数，其他忽略
+    					 * @see lib.basenet.okhttp.OkHttpRequest#getRequestBody mParams
+    					 */
+    					for (MultipartBody.Part p : parts) {
+    						if (null == p.body().contentType()) {
+    							p.body().writeTo(buffer);
+    						}
+    					}
+    				}
+    				String params = buffer.readString(Charset.forName("UTF-8")); //获取请求参数
+    				cUrl += params;
+    			} catch (IOException e) {
+    				e.printStackTrace();
+    			} finally {
+    				Util.closeQuietly(buffer);
+    			}
+
+    		}
+    		return ByteString.encodeUtf8(cUrl).md5().hex();
+    	}
+  ```
+  - 利用okhttp，应用层拦截器，如果是post时，询问缓存中，有则取出，并终止执行其他拦截器，
+  具体请参考：PostCacheInterceptor.java类；
+
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.1'
+  	compile 'com.github.lib:basenet:0.0.3'
 
   # 其他(一些实例请参考 app 的例子代码)
  
