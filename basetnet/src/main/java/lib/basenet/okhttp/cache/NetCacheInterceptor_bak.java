@@ -3,7 +3,7 @@ package lib.basenet.okhttp.cache;
 import java.io.File;
 import java.io.IOException;
 
-import lib.basenet.config.NetConfig;
+import lib.basenet.NetUtils;
 import lib.basenet.utils.NetworkUtils;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -34,8 +34,8 @@ import static okhttp3.internal.Util.discard;
 @Deprecated
 public class NetCacheInterceptor_bak implements Interceptor {
 
-	File cacheDir = new File(NetConfig.getInstance().getCacheDir() + "/post");
-	NetPostCache cache = new NetPostCache(cacheDir, NetConfig.getInstance().getCacheSize());
+	File cacheDir = new File(NetUtils.getInstance().getCacheDir() + "/post");
+	NetPostCache cache = new NetPostCache(cacheDir, NetUtils.getInstance().getCacheSize());
 
 	@Override
 	public Response intercept(Chain chain) throws IOException {
@@ -43,7 +43,7 @@ public class NetCacheInterceptor_bak implements Interceptor {
 
 		// 能存储缓存
 		if (null != request.cacheControl() && !request.cacheControl().noStore()) {
-			boolean hasNet = NetworkUtils.hasNet(NetConfig.getInstance().getApplication());
+			boolean hasNet = NetworkUtils.hasNet(NetUtils.getInstance().getApplication());
 
 			final Response originResponse;        // 原始响应
 
@@ -206,8 +206,8 @@ public class NetCacheInterceptor_bak implements Interceptor {
 	/*
 	if ("POST".equalsIgnoreCase(request.method())) {
 					// 缓存post请求
-					File cacheDir = new File(NetConfig.getCacheDir() + "/post");
-					NetCache mPostCache = new NetCache(cacheDir, NetConfig.getCacheSize());
+					File cacheDir = new File(NetUtils.getCacheDir() + "/post");
+					NetCache mPostCache = new NetCache(cacheDir, NetUtils.getCacheSize());
 
 					Response cacheCandidate = mPostCache != null
 							? mPostCache.get(request) : null;

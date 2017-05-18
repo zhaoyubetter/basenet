@@ -3,7 +3,7 @@ package lib.basenet.okhttp.cache;
 import java.io.File;
 import java.io.IOException;
 
-import lib.basenet.config.NetConfig;
+import lib.basenet.NetUtils;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -36,8 +36,8 @@ public class PostCacheInterceptor implements Interceptor {
 	final NetPostCache mPostCache;
 
 	public PostCacheInterceptor() {
-		File cacheDir = new File(NetConfig.getInstance().getCacheDir() + "/post");
-		mPostCache = new NetPostCache(cacheDir, NetConfig.getInstance().getCacheSize());
+		File cacheDir = new File(NetUtils.getInstance().getCacheDir() + "/post");
+		mPostCache = new NetPostCache(cacheDir, NetUtils.getInstance().getCacheSize());
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package lib.basenet.okhttp;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,12 +14,10 @@ import java.util.concurrent.TimeUnit;
 
 import lib.basenet.NetUtils;
 import lib.basenet.request.AbsRequest;
-import lib.basenet.utils.FileUtils;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
-import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -29,10 +26,11 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
-/**d
+/**
+ * d
  * okhttp 类
  * Created by zhaoyu1 on 2017/3/7.
- *
+ * <p>
  * update log: 2017/05/18
  * 1.下载文件时，更新监听下载文件进度方法，修复，下载无法cancel问题；
  * 2.将okhttpclient的创建方法移入 {@link NetUtils#getOkHttpClient()}
@@ -50,6 +48,11 @@ public class OkHttpRequest extends AbsRequest {
      * deliverHandler
      */
     private Handler mDeliverHandler = new Handler(Looper.getMainLooper());
+
+    /**
+     * 是否同步
+     */
+    private boolean mIsSync = false;
 
     static {
         sOkHttpClient = NetUtils.getInstance().getOkHttpClient();
@@ -70,6 +73,7 @@ public class OkHttpRequest extends AbsRequest {
 
     /**
      * 下载文件
+     *
      * @param tBuilder
      */
     private void downFile(Request.Builder tBuilder) {
@@ -180,12 +184,7 @@ public class OkHttpRequest extends AbsRequest {
         }
     }
 
-    private void realRequest(Request.Builder tBuilder) {
-        if (mDownFile != null) {
-            downFile(tBuilder);
-            return;
-        }
-
+    private OkHttpClient getClient() {
         // 判断此次请求，超时时间是否不同，如果不同，copy Client
         OkHttpClient tClient = sOkHttpClient;
         if (mTimeOut >= 10 && mTimeOut != NetUtils.getInstance().getTimeOut()) {
@@ -195,15 +194,29 @@ public class OkHttpRequest extends AbsRequest {
         } else {
             tClient = sOkHttpClient;
         }
+        return tClient;
+    }
 
+    private void setHeader(Request.Builder tBuilder) {
         // 设置Header
         if (mHeader != null && mHeader.size() > 0) {
             for (Map.Entry<String, String> entry : mHeader.entrySet()) {
                 tBuilder.header(entry.getKey(), entry.getValue());
             }
         }
+    }
 
-        // request 缓存设置
+    private void realRequest(Request.Builder tBuilder) {
+        if (mDownFile != null) {
+            downFile(tBuilder);
+            return;
+        }
+
+        // 设置Header
+        setHeader(tBuilder);
+        // 获取Client
+        OkHttpClient tClient = getClient();
+        // 设置request 缓存
         setCache(tBuilder);
 
         final Request request = tBuilder.build();       // 创建request
@@ -262,6 +275,40 @@ public class OkHttpRequest extends AbsRequest {
     }
 
     /**
+     * 同步请求
+     * @param call
+     * @return
+     */
+    private lib.basenet.response.Response realRequestSync(Call call) {
+        lib.basenet.response.Response myResponse = null;
+        Map<String, String> headerMap = null;            // 响应头
+        String returnBody = null;                        // 响应体
+        try {
+            Response response = call.execute();
+            if (response.isSuccessful()) {
+                returnBody = response.body().string();    // 字符串响应体
+                myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
+                myResponse.statusCode = response.code();
+                myResponse.message = response.message();
+                myResponse.isFromCache = response.networkResponse() == null;
+                if (null != mCallBack) {
+                    mCallBack.onSuccess(myResponse);
+                }
+            } else {
+                returnBody = response.code() + " " + response.message();
+                if (null != mCallBack) {
+                    mCallBack.onFailure(new Exception(returnBody));
+                }
+            }
+        } catch (IOException e) {
+            if (null != mCallBack) {
+                mCallBack.onFailure(e);
+            }
+        }
+        return myResponse;
+    }
+
+    /**
      * 设置缓存
      */
     private void setCache(final Request.Builder tBuilder) {
@@ -302,6 +349,12 @@ public class OkHttpRequest extends AbsRequest {
         }
     }
 
+    @Override
+    public lib.basenet.response.Response requestSync() {
+        mIsSync = true;
+
+    }
+
     /**
      * post 请求体, 必须有一个请求体，否则报异常
      *
@@ -330,7 +383,6 @@ public class OkHttpRequest extends AbsRequest {
                 final ProgressRequestBody progressRequestBody = new ProgressRequestBody(requestBody, new ProgressCallback() {
                     @Override
                     public void update(final long contentLength, final long bytesRead, final boolean done) {
-
                         deliverCallBack(new Runnable() {
                             @Override
                             public void run() {
