@@ -31,6 +31,6 @@ public interface IRequest {
     /**
      * 同步請求
      */
-    Response requestSync();
+    Response<?> requestSync();
 
 }
