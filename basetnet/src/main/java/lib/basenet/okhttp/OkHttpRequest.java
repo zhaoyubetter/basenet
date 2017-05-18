@@ -35,7 +35,7 @@ import okhttp3.Response;
  *
  * update log: 2017/05/18
  * 1.下载文件时，更新监听下载文件进度方法，修复，下载无法cancel问题；
- * 2.
+ * 2.将okhttpclient的创建方法移入 {@link NetUtils#getOkHttpClient()}
  */
 public class OkHttpRequest extends AbsRequest {
 
