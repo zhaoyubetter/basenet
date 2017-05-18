@@ -1,19 +1,33 @@
-package lib.basenet.config;
+package lib.basenet;
 
 import android.app.Application;
 import android.text.TextUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
+
+import lib.basenet.okhttp.cache.NetCacheInterceptor;
+import lib.basenet.okhttp.cache.PostCacheInterceptor;
+import lib.basenet.okhttp.log.LoggerInterceptor;
+import okhttp3.Cache;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
 
 /**
  * 全局配置
  * Created by zhaoyu on 2017/4/18.
+ *
+ *
+ * 修改记录：2017/5/18
+ * 	1. 修改类名为：NetUtils
+ * 	2. Okhttpclient 的创建，移到这里
+ * 	3. 新增全局取消方法 cancel
  */
-public final class NetConfig {
-
+public final class NetUtils {
 
 	/**
+	 *
 	 * 默认10s
 	 */
 	private static final int DEFAULT_TIME_OUT = 10 * 1000;
@@ -53,14 +67,18 @@ public final class NetConfig {
 	 */
 	private boolean isDebug;
 
-
 	/**
 	 * 单例
 	 */
-	private static NetConfig instance;
+	private static NetUtils instance;
 
 	/**
-	 * 全局初始化,构建自己的 NetConfig 对象
+	 * client 对象
+	 */
+	private OkHttpClient sOkHttpClient;
+
+	/**
+	 * 全局初始化,构建自己的 NetUtils 对象
 	 *
 	 * @param builder
 	 */
@@ -75,11 +93,42 @@ public final class NetConfig {
 	 *
 	 * @return
 	 */
-	public static NetConfig getInstance() {
+	public static NetUtils getInstance() {
 		if (instance == null) {
 			instance = new Builder().debug(false).enablePostCache(true).build();
 		}
 		return instance;
+	}
+
+	/**
+	 * 取消请求
+	 * @param tag
+	 */
+	public void cancel(Object tag) {
+		if(null != tag) {
+			for(Call call : getOkHttpClient().dispatcher().queuedCalls()) {
+				if(tag.equals(call.request().tag()))
+					call.cancel();
+			}
+
+			for(Call call : getOkHttpClient().dispatcher().runningCalls()) {
+				if(tag.equals(call.request().tag()))
+					call.cancel();
+			}
+		}
+	}
+
+	/**
+	 * 取消全部
+	 */
+	public void cancelAll() {
+		for(Call call : getOkHttpClient().dispatcher().queuedCalls()) {
+				call.cancel();
+		}
+
+		for(Call call : getOkHttpClient().dispatcher().runningCalls()) {
+				call.cancel();
+		}
 	}
 
 
@@ -154,7 +203,7 @@ public final class NetConfig {
 	 *
 	 * @param builder
 	 */
-	private NetConfig(Builder builder) {
+	private NetUtils(Builder builder) {
 		if (builder.app != null) {
 			application = builder.app;
 		} else {
@@ -192,13 +241,45 @@ public final class NetConfig {
 		this.isPostCache = builder.postCache;
 	}
 
+	public OkHttpClient getOkHttpClient() {
+		if(sOkHttpClient == null) {
+			createHttpClient();
+		}
+		return sOkHttpClient;
+	}
 
+	private void createHttpClient() {
+		final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+		builder.connectTimeout(getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.readTimeout(getTimeOut(), TimeUnit.MILLISECONDS);
+		builder.writeTimeout(getTimeOut(), TimeUnit.MILLISECONDS);
+
+		/* ==设置拦截器== */
+		// 设置缓存
+		File cacheDir = new File(getCacheDir());
+		// GET 形式缓存设置
+		Cache cache = new Cache(cacheDir, getCacheSize());
+		builder.cache(cache).addNetworkInterceptor(new NetCacheInterceptor());        // 设置缓存拦截器
+		// 日志拦截
+		if (isDebug()) {
+			builder.addInterceptor(new LoggerInterceptor());
+		}
+		// 是否允许POST 形式缓存设置
+		if (isEnablePostCache()) {
+			builder.addInterceptor(new PostCacheInterceptor());
+		}
+
+		sOkHttpClient = builder.build();
+	}
+
+	// =====================================================================
+	// =====================================================================
 	/**
 	 * 使用Builder模式
 	 */
 	public static final class Builder {
 
-		private NetConfig sConfig;      // 配置
+		private NetUtils sConfig;      // 配置
 		private Application app;
 		private String cacheDir;
 		private int cacheSize;
@@ -211,11 +292,11 @@ public final class NetConfig {
 		 *
 		 * @return
 		 */
-		public NetConfig build() {
+		public NetUtils build() {
 			if (sConfig == null) {
 				synchronized (Builder.this) {
 					if (sConfig == null) {
-						sConfig = new NetConfig(this);
+						sConfig = new NetUtils(this);
 					}
 				}
 			}

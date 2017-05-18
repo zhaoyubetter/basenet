@@ -2,7 +2,7 @@ package lib.basenet.okhttp.cache;
 
 import java.io.IOException;
 
-import lib.basenet.config.NetConfig;
+import lib.basenet.NetUtils;
 import lib.basenet.utils.NetworkUtils;
 import okhttp3.CacheControl;
 import okhttp3.Interceptor;
@@ -23,7 +23,7 @@ public class NetCacheInterceptor implements Interceptor {
 		// 从request获取是否能存储缓存
 		if (null != request.cacheControl() && !request.cacheControl().noStore()) {
 			// 是否有网络
-			boolean hasNet = NetworkUtils.hasNet(NetConfig.getInstance().getApplication());
+			boolean hasNet = NetworkUtils.hasNet(NetUtils.getInstance().getApplication());
 			// 原始响应
 			final Response originResponse;
 

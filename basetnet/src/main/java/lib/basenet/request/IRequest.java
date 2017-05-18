@@ -1,6 +1,8 @@
 package lib.basenet.request;
 
 
+import lib.basenet.response.Response;
+
 /**
  * 网络请求封装接口
  *
@@ -25,5 +27,10 @@ public interface IRequest {
      * 取消网络请求
      */
     void cancel();
+
+    /**
+     * 同步請求
+     */
+    Response requestSync();
 
 }

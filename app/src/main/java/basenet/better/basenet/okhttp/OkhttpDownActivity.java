@@ -15,16 +15,22 @@ import java.util.Map;
 
 import basenet.better.basenet.R;
 import basenet.better.basenet.utils.PermissionUtils;
+import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
+import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
 
 public class OkhttpDownActivity extends AppCompatActivity {
 
+	final String TAG = "down";
+
 	EditText et_down_url;
 	ProgressBar progress;
 	TextView progressTV;
 	TextView error;
+
+	AbsRequest request;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +43,22 @@ public class OkhttpDownActivity extends AppCompatActivity {
 		error = (TextView) findViewById(R.id.error);
 		progress.setMax(100);
 
+		et_down_url.setText("http://storage.jd.com/jd.jme.production.client/JDME_3.3.0.apk");
+
 		findViewById(R.id.upload).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				upload();
+			}
+		});
+
+		findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				NetUtils.getInstance().cancel(TAG);
+				//if(request != null) {
+				//	request.cancel();
+				//}
 			}
 		});
 	}
@@ -60,9 +78,9 @@ public class OkhttpDownActivity extends AppCompatActivity {
 
 		Map<String, File> uploads = new HashMap<>();
 		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		File file = new File(absolutePath + "/" + "headfirst.pdf");
+		File file = new File(absolutePath + "/" + "headfirst.apk");
 
-		new OkHttpRequest.Builder().url(et_down_url.getText().toString())
+		request = new OkHttpRequest.Builder().url(et_down_url.getText().toString())
 				.downFile(file)
 				.callback(new AbsRequestCallBack() {
 					@Override
@@ -92,7 +110,8 @@ public class OkhttpDownActivity extends AppCompatActivity {
 							}
 						});
 					}
-				})
-				.build().request();
+				}).tag(TAG)
+				.build();
+		request.request();
 	}
 }
