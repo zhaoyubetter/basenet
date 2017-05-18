@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import basenet.better.basenet.R;
-import lib.basenet.config.NetConfig;
+import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
@@ -58,7 +58,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 		findViewById(R.id.clearCache).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				clear(NetConfig.getInstance().getCacheDir());
+				clear(NetUtils.getInstance().getCacheDir());
 			}
 		});
 
@@ -93,7 +93,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 
 
 		// 全局配置NetConfig
-		NetConfig.init(new NetConfig.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
+		NetUtils.init(new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
 				.debug(true).enablePostCache(true).timeout(10).app(getApplication())
 		);
 	}

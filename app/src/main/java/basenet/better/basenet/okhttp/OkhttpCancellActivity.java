@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.Map;
 
 import basenet.better.basenet.R;
+import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
@@ -57,9 +58,11 @@ public class OkhttpCancellActivity extends AppCompatActivity implements View.OnC
 		findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (null != request) {
-					request.cancel();
-				}
+//				if (null != request) {
+//					request.cancel();
+//				}
+
+				NetUtils.getInstance().cancel(TAG);
 			}
 		});
 	}
