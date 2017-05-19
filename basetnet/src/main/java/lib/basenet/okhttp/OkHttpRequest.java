@@ -34,6 +34,9 @@ import okhttp3.Response;
  * update log: 2017/05/18
  * 1.下载文件时，更新监听下载文件进度方法，修复，下载无法cancel问题；
  * 2.将okhttpclient的创建方法移入 {@link NetUtils#getOkHttpClient()}
+ * <p>
+ * update log : 2017/05/19
+ * 1.新增，同步请求，新增 {@link #mIsSync} 成员变量
  */
 public class OkHttpRequest extends AbsRequest {
 
@@ -157,7 +160,7 @@ public class OkHttpRequest extends AbsRequest {
 				if (null != mCallBack) {
 					final long currentBytes = sum;
 					long curTime = System.currentTimeMillis();
-					if (curTime - lastRefreshTime >= 150 || currentBytes == total) {      // 每隔150毫米刷新一次, or 下载完成
+					if (curTime - lastRefreshTime >= 150 || currentBytes == total) {      // 每隔150毫米 or 下载完成 刷新一次
 						if (mIsSync) {
 							mCallBack.onProgressUpdate(total, currentBytes, currentBytes == total);
 						} else {
