@@ -141,6 +141,7 @@ public class OKHttpSyncActivity extends AppCompatActivity {
 						});
 					}
 				})
+				// .cacheTime(5000)  // 缓存测试OK
 				.build()
 				.requestSync();
 		// 请求成功了
