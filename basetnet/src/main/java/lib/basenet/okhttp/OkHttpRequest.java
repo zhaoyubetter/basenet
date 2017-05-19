@@ -37,6 +37,7 @@ import okhttp3.Response;
  * <p>
  * update log : 2017/05/19
  * 1.新增，同步请求，新增 {@link #mIsSync} 成员变量
+ * 2.同步请求，请使用 Request.cancel()进行请求取消
  */
 public class OkHttpRequest extends AbsRequest {
 
