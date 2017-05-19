@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import basenet.better.basenet.okhttp.OKHttpSyncActivity;
 import basenet.better.basenet.okhttp.OkhttpCacheActivity;
 import basenet.better.basenet.okhttp.OkhttpCancellActivity;
 import basenet.better.basenet.okhttp.OkhttpDownActivity;
@@ -26,6 +27,7 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
 		findViewById(R.id.upload).setOnClickListener(this);
 		findViewById(R.id.download).setOnClickListener(this);
 		findViewById(R.id.cache).setOnClickListener(this);
+		findViewById(R.id.sync).setOnClickListener(this);
 	}
 
 	@Override
@@ -49,6 +51,9 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
 				break;
 			case R.id.cache:
 				intent = new Intent(this, OkhttpCacheActivity.class);
+				break;
+			case R.id.sync:
+				intent = new Intent(this, OKHttpSyncActivity.class);
 				break;
 		}
 		if (intent != null) {

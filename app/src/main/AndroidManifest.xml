@@ -42,15 +42,15 @@
         <activity
             android:name=".okhttp.OkhttpUploadActivity"
             android:windowSoftInputMode="stateHidden">
-
         </activity>
         <activity
             android:name=".okhttp.OkhttpDownActivity"
             android:windowSoftInputMode="stateHidden"/>
-
         <activity
             android:name=".okhttp.OkhttpCacheActivity"
             android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".okhttp.OKHttpSyncActivity">
+        </activity>
     </application>
 
 </manifest>
