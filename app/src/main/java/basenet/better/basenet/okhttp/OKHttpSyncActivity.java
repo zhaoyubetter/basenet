@@ -74,9 +74,10 @@ public class OKHttpSyncActivity extends AppCompatActivity {
 		findViewById(R.id.sync_cancel).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (null != mRequest) {
-					mRequest.cancel();
-				}
+				// 下载文件如要取消 用  request 来取消
+//				if (null != mRequest) {
+//					mRequest.cancel();
+//				}
 
 				NetUtils.getInstance().cancel(TAG_NORMAL);
 			}
