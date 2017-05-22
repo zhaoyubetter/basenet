@@ -17,6 +17,11 @@
 - 添加强制刷新功能；
 - 添加全局配置类
 
+--- 2017-05-22
+- 新增 NetUtils 工具类，全局配置移入此；
+- 新增同步请求功能，与示例代码；
+- tag v0.0.4;
+
 # ~~使用volley请求网络（废弃）~~
 ```java
  new VolleyRequest.Builder(getApplication()).url("https://www.github.com")
