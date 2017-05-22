@@ -205,7 +205,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.3'
+  	compile 'com.github.lib:basenet:0.0.4'
 
   # 其他(一些实例请参考 app 的例子代码)
  
