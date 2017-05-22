@@ -82,7 +82,7 @@ public class OkHttpRequest extends AbsRequest {
 	 */
 	private void downFile(Request.Builder tBuilder) {
 		// 执行下载逻辑
-		mCall = sOkHttpClient.newCall(tBuilder.build());
+		mCall = getClient().newCall(tBuilder.build());
 		mCall.enqueue(new Callback() {
 			Map<String, String> headerMap = null;            // 响应头
 
@@ -215,16 +215,18 @@ public class OkHttpRequest extends AbsRequest {
 	}
 
 	private void realRequest(Request.Builder tBuilder) {
+		// 1.设置Header
+		setHeader(tBuilder);
+
+		// 如果是下载文件，不设置缓存
 		if (mDownFile != null) {
 			downFile(tBuilder);
 			return;
 		}
 
-		// 设置Header
-		setHeader(tBuilder);
-		// 获取Client
+		// 2.获取Client
 		OkHttpClient tClient = getClient();
-		// 设置request 缓存
+		// 3.设置request 缓存
 		setCache(tBuilder);
 
 		final Request request = tBuilder.build();       // 创建request
@@ -289,12 +291,13 @@ public class OkHttpRequest extends AbsRequest {
 	 * @return
 	 */
 	private lib.basenet.response.Response realRequestSync(Request.Builder tBuilder) {
+		// 设置Header
+		setHeader(tBuilder);
+
 		if (mDownFile != null) {
 			return downFileSync(tBuilder);
 		}
 
-		// 设置Header
-		setHeader(tBuilder);
 		// 获取Client
 		OkHttpClient tClient = getClient();
 		// 设置request 缓存
@@ -339,7 +342,7 @@ public class OkHttpRequest extends AbsRequest {
 	 */
 	private lib.basenet.response.Response downFileSync(Request.Builder tBuilder) {
 		// 执行下载逻辑
-		mCall = sOkHttpClient.newCall(tBuilder.build());
+		mCall = getClient().newCall(tBuilder.build());
 		lib.basenet.response.Response myResponse = null;
 
 		try {
@@ -428,7 +431,7 @@ public class OkHttpRequest extends AbsRequest {
 		lib.basenet.response.Response myResponse = null;
 		Request.Builder tBuilder = new Request.Builder();
 
-		// 避免出错
+		// 避免出错，再次判断类型
 		if (mUploadFiles != null) {
 			type = RequestType.POST;
 		}
