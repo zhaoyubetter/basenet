@@ -133,7 +133,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   ## NetConfig全局配置
   ```java
   // 全局配置NetConfig，设置缓存路径、允许使用post缓存等；
-  NetConfig.init(new NetConfig.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
+  NetUtils.init(new NetConfig.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
   		.debug(true).enablePostCache(true).timeout(10).app(getApplication())
   );
   ```
