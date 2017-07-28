@@ -3,7 +3,7 @@
 - 上传下载文件，可使用Okhttp, volley 不支持大文件的上传下载；
 - ~~暂没有考虑缓存实现；~~
 - 支持 缓存（GET 与 POST, 由客户端，酌情去配置缓存时间）;
-- https与gzip压缩有待测试；
+- https与gzip压缩有待测试（现可配置ssl）；
 
 # 更新日志 -- 2017-03-26
 - 新增tag标签 v0.0.1;
@@ -21,6 +21,20 @@
 - 新增 NetUtils 工具类，全局配置移入此；
 - 新增同步请求功能，与示例代码；
 - tag v0.0.4;
+
+--- 2017-07-28
+- 添加httpsUtils(拿了鸿洋的)；支持 https配置；
+- 拦截器开放，外界可指定拦截器；
+- tag 0.0.5 
+
+# 配置拦截器
+```java
+// 全局配置NetConfig
+NetUtils.init(
+	new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/basenet")
+	.debug(true).enablePostCache(true).timeout(10).app(this)
+		.addNetInterceptor(new StethoInterceptor()));
+```
 
 # ~~使用volley请求网络（废弃）~~
 ```java
