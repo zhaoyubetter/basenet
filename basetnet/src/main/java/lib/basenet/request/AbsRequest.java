@@ -3,7 +3,10 @@ package lib.basenet.request;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Map;
+
+import lib.basenet.NetUtils;
 
 /**
  * 网络请求封装接口,抽象类
@@ -252,8 +255,24 @@ public abstract class AbsRequest implements IRequest {
 			return this;
 		}
 
+		public Builder addBody(String key, String value) {
+			if(this.mParams == null) {
+				this.mParams = new HashMap<>();
+			}
+			mParams.put(key, value);
+			return this;
+		}
+
 		public Builder headers(Map<String, String> headers) {
 			this.mHeader = headers;
+			return this;
+		}
+
+		public Builder addHeader(String key, String value) {
+			if(this.mHeader == null) {
+				mHeader = new HashMap<>();
+			}
+			mHeader.put(key, value);
 			return this;
 		}
 
@@ -285,6 +304,15 @@ public abstract class AbsRequest implements IRequest {
 			this.mUploadFiles = fileMaps;
 			return this;
 		}
+
+		public Builder addUploadFile(String key, File file) {
+			if(this.mUploadFiles == null) {
+				mUploadFiles = new HashMap<>();
+			}
+			mUploadFiles.put(key, file);
+			return this;
+		}
+
 
 		public Builder downFile(File downFile) {
 			this.mDownFile = downFile;
