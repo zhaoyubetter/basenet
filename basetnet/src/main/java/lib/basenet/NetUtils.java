@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
+
 import lib.basenet.okhttp.cache.NetCacheInterceptor;
 import lib.basenet.okhttp.cache.PostCacheInterceptor;
 import lib.basenet.okhttp.log.LoggerInterceptor;
@@ -79,6 +82,10 @@ public final class NetUtils {
      * 网络拦截器
      */
     private List<Interceptor> netInterceptors;
+
+    // ssl 支持
+    private SSLSocketFactory sSLSocketFactory;
+    private X509TrustManager trustManager;
 
     /**
      * 单例
@@ -255,6 +262,10 @@ public final class NetUtils {
         this.isPostCache = builder.postCache;
         this.netInterceptors = builder.netInterceptors;
         this.interceptors = builder.interceptors;
+
+        // ssl
+        this.sSLSocketFactory = builder.sSLSocketFactory;
+        this.trustManager = builder.trustManager;
     }
 
     public OkHttpClient getOkHttpClient() {
@@ -301,8 +312,12 @@ public final class NetUtils {
         }
 
         // ssl，默认设置可访问所有的https网站
-        HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory(null, null, null);
-        builder.sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager);
+        if(sSLSocketFactory == null && trustManager == null) {
+            HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory(null, null, null);
+            builder.sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager);
+        } else {
+            builder.sslSocketFactory(sSLSocketFactory, trustManager);
+        }
 
         sOkHttpClient = builder.build();
     }
@@ -324,6 +339,10 @@ public final class NetUtils {
         private boolean postCache;
         private List<Interceptor> interceptors;        // 应用拦截器
         private List<Interceptor> netInterceptors;    // 网络拦截器
+
+        // ssl 支持
+        private SSLSocketFactory sSLSocketFactory;
+        private X509TrustManager trustManager;
 
         /**
          * 确保只初始化一次
@@ -419,6 +438,12 @@ public final class NetUtils {
          */
         public Builder enablePostCache(boolean postCache) {
             this.postCache = postCache;
+            return this;
+        }
+
+        public Builder ssl(SSLSocketFactory factory, X509TrustManager mgr) {
+            this.sSLSocketFactory = factory;
+            this.trustManager = mgr;
             return this;
         }
     }
