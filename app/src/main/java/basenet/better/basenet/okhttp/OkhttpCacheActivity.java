@@ -92,10 +92,6 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 		});
 
 
-		// 全局配置NetConfig
-		NetUtils.init(new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/basenet")
-				.debug(true).enablePostCache(true).timeout(10).app(getApplication())
-		);
 	}
 
 	private void getData(boolean isforce) {

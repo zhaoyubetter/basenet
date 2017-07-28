@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="输入url"
-        android:text="http://httpbin.org/delay/0"/>
+        android:text="https://www.jd.com"/>
 
     <Button
         android:id="@+id/get"

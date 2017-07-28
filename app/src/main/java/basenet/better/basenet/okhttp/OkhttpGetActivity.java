@@ -12,6 +12,7 @@ import android.widget.Toast;
 import java.util.Map;
 
 import basenet.better.basenet.R;
+import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
