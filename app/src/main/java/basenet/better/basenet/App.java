@@ -25,6 +25,6 @@ public class App extends Application {
         NetUtils.init(
                 new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/basenet")
                 .debug(true).enablePostCache(true).timeout(10).app(this)
-                        .netInterceptors(Collections.<Interceptor>singletonList(new StethoInterceptor())));
+                        .addNetInterceptor(new StethoInterceptor()));
     }
 }
