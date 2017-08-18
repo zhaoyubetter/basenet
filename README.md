@@ -25,7 +25,11 @@
 --- 2017-07-28
 - 添加httpsUtils(拿了鸿洋的)；支持 https配置；
 - 拦截器开放，外界可指定拦截器；
-- tag 0.0.5 
+- tag 0.0.5
+
+--- 2017-08-18
+- 修正使用post请求，无文件上传时，basenet 使用 Multipartbody 问题；
+- 由于没有添加 gson 支持，response的只有String泛型，其他泛型配置将失败，`大bug`
 
 # 配置拦截器
 ```java

@@ -9,7 +9,6 @@ import com.facebook.stetho.okhttp3.StethoInterceptor;
 import java.util.Collections;
 
 import lib.basenet.NetUtils;
-import okhttp3.Interceptor;
 
 /**
  * Created by zhaoyu1 on 2017/7/28.
