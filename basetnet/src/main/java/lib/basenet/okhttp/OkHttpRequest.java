@@ -17,6 +17,7 @@ import lib.basenet.request.AbsRequest;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -461,17 +462,17 @@ public class OkHttpRequest extends AbsRequest {
 	private RequestBody getRequestBody() {
 		RequestBody requestBody = null;
 
-		MultipartBody.Builder builder = new MultipartBody.Builder();
-		builder.setType(MultipartBody.FORM);
-
-		if (null != mParams && mParams.size() > 0) {
-			for (Map.Entry<String, String> entry : mParams.entrySet()) {
-				builder.addFormDataPart(entry.getKey(), entry.getValue());
-			}
-		}
-
-		// 上传文件部分
+		// 上传文件部分 (参数使用 MultipartBody 来构建)
 		if (null != mUploadFiles && mUploadFiles.size() > 0) {
+			MultipartBody.Builder builder = new MultipartBody.Builder();
+			builder.setType(MultipartBody.FORM);
+
+			if (null != mParams && mParams.size() > 0) {
+				for (Map.Entry<String, String> entry : mParams.entrySet()) {
+					builder.addFormDataPart(entry.getKey(), entry.getValue());
+				}
+			}
+
 			for (Map.Entry<String, File> entry : mUploadFiles.entrySet()) {
 				builder.addFormDataPart(entry.getKey(), entry.getValue().getName(), RequestBody.create(MEDIA_TYPE_MARKDOWN, entry.getValue()));
 			}
@@ -495,10 +496,24 @@ public class OkHttpRequest extends AbsRequest {
 				});
 				requestBody = progressRequestBody;
 			}
+		} else {	// 普通表单
+			// 2017-08-18 修正 bug，如果没有文件上传，使用默认FormBody方式
+			FormBody.Builder formBuilder = new FormBody.Builder();
+			if (null != mParams && mParams.size() > 0) {
+				for (Map.Entry<String, String> entry : mParams.entrySet()) {
+					formBuilder.add(entry.getKey(), entry.getValue());
+				}
+			}
+			requestBody = formBuilder.build();
 		}
 
-		if (requestBody == null) {
-			requestBody = builder.build();
+		try {
+			if(requestBody == null || requestBody.contentLength() <= 0L) {
+                FormBody.Builder formBuilder = new FormBody.Builder();
+                formBuilder.add("basenet___", "basenet___");
+                requestBody = formBuilder.build();
+            }
+		} catch (IOException e) {
 		}
 
 		return requestBody;
