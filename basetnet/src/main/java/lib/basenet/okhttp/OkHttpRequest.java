@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import lib.basenet.NetUtils;
 import lib.basenet.request.AbsRequest;
+import lib.basenet.utils.FileUtils;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -43,7 +44,6 @@ import okhttp3.Response;
 public class OkHttpRequest extends AbsRequest {
 
 	private static final OkHttpClient sOkHttpClient;
-	private static final MediaType MEDIA_TYPE_MARKDOWN = MediaType.parse("media/type");
 
 	/**
 	 * 记录Call，方便取消
@@ -59,12 +59,18 @@ public class OkHttpRequest extends AbsRequest {
 	 */
 	private boolean mIsSync = false;
 
+	/**
+	 * 请求体
+	 */
+	private RequestBody mRequestBody = null;
+
 	static {
 		sOkHttpClient = NetUtils.getInstance().getOkHttpClient();
 	}
 
 	protected OkHttpRequest(Builder builder) {
 		super(builder);
+		this.mRequestBody = builder.requestBody;
 	}
 
 	/**
@@ -462,6 +468,11 @@ public class OkHttpRequest extends AbsRequest {
 	private RequestBody getRequestBody() {
 		RequestBody requestBody = null;
 
+		// 2017-11-24 新增，支持外界设置RequestBody,并直接返回
+		if(null != mRequestBody) {
+			return getWrapperRequestBody(mRequestBody);
+		}
+
 		// 上传文件部分 (参数使用 MultipartBody 来构建)
 		if (null != mUploadFiles && mUploadFiles.size() > 0) {
 			MultipartBody.Builder builder = new MultipartBody.Builder();
@@ -474,28 +485,12 @@ public class OkHttpRequest extends AbsRequest {
 			}
 
 			for (Map.Entry<String, File> entry : mUploadFiles.entrySet()) {
-				builder.addFormDataPart(entry.getKey(), entry.getValue().getName(), RequestBody.create(MEDIA_TYPE_MARKDOWN, entry.getValue()));
+				final MediaType mediaType = MediaType.parse(FileUtils.getMimeType(entry.getValue().getAbsolutePath()));
+				builder.addFormDataPart(entry.getKey(), entry.getValue().getName(), RequestBody.create(mediaType, entry.getValue()));
 			}
 
-			requestBody = builder.build();
-			if (null != mCallBack) {
-				final ProgressRequestBody progressRequestBody = new ProgressRequestBody(requestBody, new ProgressCallback() {
-					@Override
-					public void update(final long contentLength, final long bytesRead, final boolean done) {
-						if (mIsSync) {
-							mCallBack.onProgressUpdate(contentLength, bytesRead, done);
-						} else {
-							deliverCallBack(new Runnable() {
-								@Override
-								public void run() {
-									mCallBack.onProgressUpdate(contentLength, bytesRead, done);
-								}
-							});
-						}
-					}
-				});
-				requestBody = progressRequestBody;
-			}
+			// 包装一下，支持进度
+			requestBody = getWrapperRequestBody(builder.build());
 		} else {	// 普通表单
 			// 2017-08-18 修正 bug，如果没有文件上传，使用默认FormBody方式
 			FormBody.Builder formBuilder = new FormBody.Builder();
@@ -520,6 +515,33 @@ public class OkHttpRequest extends AbsRequest {
 	}
 
 	/**
+	 * 获取wrapper RequestBody
+	 * @return
+	 */
+	private RequestBody getWrapperRequestBody(RequestBody body) {
+		RequestBody requestBody = body;
+		if (null != mCallBack) {
+			final ProgressRequestBody progressRequestBody = new ProgressRequestBody(body, new ProgressCallback() {
+				@Override
+				public void update(final long contentLength, final long bytesRead, final boolean done) {
+					if (mIsSync) {
+						mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+					} else {
+						deliverCallBack(new Runnable() {
+							@Override
+							public void run() {
+								mCallBack.onProgressUpdate(contentLength, bytesRead, done);
+							}
+						});
+					}
+				}
+			});
+			requestBody = progressRequestBody;
+		}
+		return requestBody;
+	}
+
+	/**
 	 * 封装响应 header
 	 *
 	 * @param response
@@ -539,6 +561,21 @@ public class OkHttpRequest extends AbsRequest {
 	}
 
 	public static class Builder extends AbsRequest.Builder {
+		/**
+		 * 请求body （如果设置了此body， mParams 会自动移除）
+		 */
+		private RequestBody requestBody;
+
+		/**
+		 * 设置requestBody，如果设置了此参数，此前设置的 params将自动移除
+		 * 因为requestBody,就是整个请求对象
+		 * @return
+		 */
+		public OkHttpRequest.Builder requestBody(RequestBody requestBody) {
+			this.requestBody = requestBody;
+			return this;
+		}
+
 		@Override
 		public AbsRequest build() {
 			return new OkHttpRequest(this);
