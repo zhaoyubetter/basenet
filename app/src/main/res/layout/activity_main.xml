@@ -24,4 +24,10 @@
         android:layout_height="wrap_content"
         android:text="okhttp" />
 
+    <Button
+        android:id="@+id/testMimeType"
+        android:layout_width="wrap_content"
+        android:text="测试MIME"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>
