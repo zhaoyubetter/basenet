@@ -396,7 +396,7 @@ public class OkHttpRequest extends AbsRequest {
 
     @Override
     protected void get() {
-        if (mUploadFiles != null) {
+        if (mUploadFiles != null || mRequestBody != null) {
             post();
         } else {
             Request.Builder tBuilder = new Request.Builder();
