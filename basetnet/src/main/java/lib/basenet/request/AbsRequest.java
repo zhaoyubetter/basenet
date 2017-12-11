@@ -6,8 +6,6 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import lib.basenet.NetUtils;
-
 /**
  * 网络请求封装接口,抽象类
  *
@@ -78,6 +76,8 @@ public abstract class AbsRequest implements IRequest {
      */
     protected boolean mIsForceRefresh = false;
 
+    protected BaseRequestBody mRequestBody;
+
     public String getUrl() {
         return mUrl;
     }
@@ -134,6 +134,7 @@ public abstract class AbsRequest implements IRequest {
         this.mDownFile = builder.mDownFile;
         this.mCacheTime = builder.mCacheTime;
         this.mIsForceRefresh = builder.mIsForceRefresh;
+        this.mRequestBody = builder.mBody;
     }
 
     @Override
@@ -241,6 +242,11 @@ public abstract class AbsRequest implements IRequest {
          */
         private boolean mIsForceRefresh = false;
 
+        /**
+         * 请求的body
+         */
+        private BaseRequestBody mBody = null;
+
         public Builder() {
         }
 
@@ -330,6 +336,16 @@ public abstract class AbsRequest implements IRequest {
 
         public Builder forceRefresh(boolean forceRefresh) {
             this.mIsForceRefresh = forceRefresh;
+            return this;
+        }
+
+        /**
+         * 设置缓存时间，秒为单位
+         *
+         * @return
+         */
+        public Builder requestBody(BaseRequestBody body) {
+            this.mBody = body;
             return this;
         }
 
