@@ -31,6 +31,11 @@
 - 修正使用post请求，无文件上传时，basenet 使用 Multipartbody 问题；
 - 由于没有添加 gson 支持，response的只有String泛型，其他泛型配置将失败，`大bug`
 
+--- 2017-12-11
+- 新增 `BaseRequestBody类`，支持直接post（但不能用于大文件）；
+- 新增 自动识别 文件 mimetype功能；
+- tag 0.0.7
+
 # 配置拦截器
 ```java
 // 全局配置NetConfig
@@ -223,7 +228,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.6'
+  	compile 'com.github.lib:basenet:0.0.7'
 
   # 其他(一些实例请参考 app 的例子代码)
  
