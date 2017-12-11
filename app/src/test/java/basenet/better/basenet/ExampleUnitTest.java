@@ -19,7 +19,5 @@ public class ExampleUnitTest {
 
 	@Test
 	public void testMimeType() {
-		System.out.println("aaa");
-		System.out.println(FileUtils.getMimeType("http://storage.jd.com/tripitaka-jenkins/auto.zip"));
 	}
 }

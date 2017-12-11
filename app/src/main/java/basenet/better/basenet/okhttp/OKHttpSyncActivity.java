@@ -8,6 +8,7 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,7 +17,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Map;
 
 import basenet.better.basenet.R;
 import basenet.better.basenet.utils.PermissionUtils;
@@ -24,7 +30,14 @@ import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
+import lib.basenet.request.BaseRequestBody;
 import lib.basenet.response.Response;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 
 public class OKHttpSyncActivity extends AppCompatActivity {
@@ -101,6 +114,14 @@ public class OKHttpSyncActivity extends AppCompatActivity {
 			public void onClick(View v) {
 				tv_content.setText("");
 				mWorkHandler.sendEmptyMessage(NORMAL_REQUEST);
+			}
+		});
+
+
+		// 测试 BaseRequestBody
+		findViewById(R.id.btn_test).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
 			}
 		});
 	}
