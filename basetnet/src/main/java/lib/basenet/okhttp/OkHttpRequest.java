@@ -558,7 +558,7 @@ public class OkHttpRequest extends AbsRequest {
 
     public static class Builder extends AbsRequest.Builder {
         @Override
-        public AbsRequest build() {
+        public OkHttpRequest build() {
             return new OkHttpRequest(this);
         }
     }

@@ -186,7 +186,11 @@ public abstract class AbsRequest implements IRequest {
     }
 
 
-    public static abstract class Builder {
+    /**
+     * Let builder mode support inheritance
+     * @param <T>
+     */
+    public static abstract class Builder<T extends Builder> {
 
         /**
          * url 地址
@@ -250,78 +254,78 @@ public abstract class AbsRequest implements IRequest {
         public Builder() {
         }
 
-        public Builder url(String url) {
+        public T url(String url) {
             this.mUrl = url;
-            return this;
+            return (T) this;
         }
 
-        public Builder body(Map<String, String> params) {
+        public T body(Map<String, String> params) {
             this.mParams = params;
-            return this;
+            return (T) this;
         }
 
-        public Builder addBody(String key, String value) {
+        public T addBody(String key, String value) {
             if (this.mParams == null) {
                 this.mParams = new HashMap<>();
             }
             mParams.put(key, value);
-            return this;
+            return (T) this;
         }
 
-        public Builder headers(Map<String, String> headers) {
+        public T headers(Map<String, String> headers) {
             this.mHeader = headers;
-            return this;
+            return (T) this;
         }
 
-        public Builder addHeader(String key, String value) {
+        public T addHeader(String key, String value) {
             if (this.mHeader == null) {
                 mHeader = new HashMap<>();
             }
             mHeader.put(key, value);
-            return this;
+            return (T) this;
         }
 
-        public Builder timeout(long time) {
+        public T timeout(long time) {
             this.mTimeOut = time;
-            return this;
+            return (T) this;
         }
 
-        public Builder tag(Object tag) {
+        public T tag(Object tag) {
             this.mTag = tag;
-            return this;
+            return (T) this;
         }
 
-        public Builder callback(AbsRequestCallBack callBack) {
+        public T callback(AbsRequestCallBack callBack) {
             this.mCallBack = callBack;
-            return this;
+            return (T) this;
         }
 
         /**
          * @param reqType {@link IRequest.RequestType}中常量
          * @return
          */
-        public Builder type(int reqType) {
+        public T type(int reqType) {
             this.mReqType = reqType;
-            return this;
+            return (T) this;
         }
 
-        public Builder uploadFiles(Map<String, File> fileMaps) {
+        public T uploadFiles(Map<String, File> fileMaps) {
             this.mUploadFiles = fileMaps;
-            return this;
+            return (T) this;
         }
 
-        public Builder addUploadFile(String key, File file) {
+        public T addUploadFile(String key, File file) {
             if (this.mUploadFiles == null) {
                 mUploadFiles = new HashMap<>();
             }
             mUploadFiles.put(key, file);
-            return this;
+            return (T) this;
         }
 
 
-        public Builder downFile(File downFile) {
+        public T downFile(File downFile) {
             this.mDownFile = downFile;
-            return this;
+            return (T) this;
         }
 
         /**
@@ -329,14 +333,14 @@ public abstract class AbsRequest implements IRequest {
          *
          * @return
          */
-        public Builder cacheTime(int cacheTime) {
+        public T cacheTime(int cacheTime) {
             this.mCacheTime = cacheTime;
-            return this;
+            return (T) this;
         }
 
-        public Builder forceRefresh(boolean forceRefresh) {
+        public T forceRefresh(boolean forceRefresh) {
             this.mIsForceRefresh = forceRefresh;
-            return this;
+            return (T) this;
         }
 
         /**
@@ -344,11 +348,11 @@ public abstract class AbsRequest implements IRequest {
          *
          * @return
          */
-        public Builder requestBody(BaseRequestBody body) {
+        public T requestBody(BaseRequestBody body) {
             this.mBody = body;
-            return this;
+            return (T) this;
         }
 
-        public abstract AbsRequest build();
+        public abstract <D extends AbsRequest> D build();
     }
 }
