@@ -101,7 +101,7 @@ public class OkhttpCacheActivity extends AppCompatActivity {
 		params.put("hello1", "I'm better");
 		params.put("hello5", "I'm better -- ");
 
-		new OkHttpRequest.Builder().url(url.getText().toString()).cacheTime(cacheTime).type(mIsGet ? AbsRequest.RequestType.GET : AbsRequest.RequestType.POST).body(params).forceRefresh(isforce)
+        new OkHttpRequest.Builder().url(url.getText().toString()).cacheTime(cacheTime).type(mIsGet ? AbsRequest.RequestType.GET : AbsRequest.RequestType.POST).body(params).forceRefresh(isforce)
 				.callback(new AbsRequestCallBack<String>() {
 					@Override
 					public void onSuccess(Response<String> response) {
