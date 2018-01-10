@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
+import lib.basenet.request.IRequest;
 import lib.basenet.response.Response;
 
 /**
@@ -93,6 +95,12 @@ public class OkhttpCancellActivity extends AppCompatActivity implements View.OnC
 					public void onFailure(final Throwable e) {
 						super.onFailure(e);
 						error.setText(e.toString());
+					}
+
+					@Override
+					public void onCancel() {
+						super.onCancel();
+						Toast.makeText(OkhttpCancellActivity.this, "onCancel()", Toast.LENGTH_SHORT).show();
 					}
 				}).build();
 		request.request();

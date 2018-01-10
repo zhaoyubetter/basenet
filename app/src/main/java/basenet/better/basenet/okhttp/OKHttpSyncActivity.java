@@ -122,6 +122,7 @@ public class OKHttpSyncActivity extends AppCompatActivity {
 		findViewById(R.id.btn_test).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				NetUtils.getInstance().cancelAll();
 			}
 		});
 	}
@@ -159,6 +160,16 @@ public class OKHttpSyncActivity extends AppCompatActivity {
 							@Override
 							public void run() {
 								Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+							}
+						});
+					}
+
+					@Override
+					public void onCancel() {
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(getApplicationContext(),"网络取消。。。", Toast.LENGTH_SHORT).show();
 							}
 						});
 					}
