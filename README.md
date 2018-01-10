@@ -36,6 +36,10 @@
 - 新增 自动识别 文件 mimetype功能；
 - tag 0.0.7
 
+--- 2017-01-10
+- 新增 `onCancel` 方法，默认不实现；
+- tag 0.0.8
+
 # 配置拦截器
 ```java
 // 全局配置NetConfig
@@ -228,7 +232,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.7'
+  	compile 'com.github.lib:basenet:0.0.8'
 
   # 其他(一些实例请参考 app 的例子代码)
  

@@ -1,9 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def VERSION = '0.0.7'
+def VERSION = '0.0.8'
 
-//  上传命令：gradlew clean build bintrayUpload -PbintrayUser=zhaoyubetter -PbintrayKey=git -PdryRun=false
+//  上传命令：gradlew clean build bintrayUpload -PbintrayUser=zhaoyubetter -PbintrayKey=key -PdryRun=false
 
 android {
     compileSdkVersion 25
