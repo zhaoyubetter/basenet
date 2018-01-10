@@ -13,6 +13,11 @@ public abstract class AbsRequestCallBack<T> {
 	public void onFailure(Throwable e) {
 	}
 
+	// 取消
+	public void onCancel() {
+
+	}
+
 	public void onProgressUpdate(long contentLength, long bytesRead, boolean done) {
 	}
 }
