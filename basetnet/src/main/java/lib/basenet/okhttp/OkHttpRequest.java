@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import lib.basenet.NetUtils;
 import lib.basenet.request.AbsRequest;
-import lib.basenet.request.BaseRequestBody;
 import lib.basenet.utils.FileUtils;
 import okhttp3.CacheControl;
 import okhttp3.Call;
@@ -90,13 +89,22 @@ public class OkHttpRequest extends AbsRequest {
 
             @Override
             public void onFailure(final Call call, final IOException e) {
-                if (null != mCallBack) {
-                    deliverCallBack(new Runnable() {
-                        @Override
-                        public void run() {
-                            mCallBack.onFailure(e);
-                        }
-                    });
+                if (null != mCallBack) {  // not cancel,so it's real exception
+                    if(call != null && call.isCanceled()) {
+                        deliverCallBack(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCallBack.onCancel();
+                            }
+                        });
+                    } else {
+                        deliverCallBack(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCallBack.onFailure(e);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -242,13 +250,22 @@ public class OkHttpRequest extends AbsRequest {
 
             @Override
             public void onFailure(Call call, final IOException e) {
-                if (null != mCallBack) {
-                    deliverCallBack(new Runnable() {
-                        @Override
-                        public void run() {
-                            mCallBack.onFailure(e);
-                        }
-                    });
+                if (null != mCallBack) {  // not cancel,so it's real exception
+                    if(call != null && call.isCanceled()) {
+                        deliverCallBack(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCallBack.onCancel();
+                            }
+                        });
+                    } else {
+                        deliverCallBack(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCallBack.onFailure(e);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -328,9 +345,13 @@ public class OkHttpRequest extends AbsRequest {
                     mCallBack.onFailure(new Exception(returnBody));
                 }
             }
-        } catch (IOException e) {
-            if (null != mCallBack) {
-                mCallBack.onFailure(e);
+        } catch (final IOException e) {
+            if (null != mCallBack) {  // not cancel,so it's real exception
+                if(mCall != null && mCall.isCanceled()) {
+                    mCallBack.onCancel();
+                } else {
+                    mCallBack.onFailure(e);
+                }
             }
         }
 
@@ -355,8 +376,12 @@ public class OkHttpRequest extends AbsRequest {
                 try {
                     parseFileDownResponse(response);
                 } catch (final IOException e) {
-                    if (mCallBack != null) {
-                        mCallBack.onFailure(e);
+                    if (null != mCallBack) {  // not cancel,so it's real exception
+                        if(mCall != null && mCall.isCanceled()) {
+                            mCallBack.onCancel();
+                        } else {
+                            mCallBack.onFailure(e);
+                        }
                     }
                     return null;
                 }
@@ -372,7 +397,13 @@ public class OkHttpRequest extends AbsRequest {
                 }
             }
         } catch (IOException e) {
-            mCallBack.onFailure(e);
+            if (null != mCallBack) {  // not cancel,so it's real exception
+                if(mCall != null && mCall.isCanceled()) {
+                    mCallBack.onCancel();
+                } else {
+                    mCallBack.onFailure(e);
+                }
+            }
         }
 
         return myResponse;
