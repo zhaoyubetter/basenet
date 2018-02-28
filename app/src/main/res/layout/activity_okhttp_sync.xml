@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="http://storage.jd.com/jd.jme.production.client/JDME_3.3.0.apk" />
+            android:text="" />
 
         <Button
             android:id="@+id/sync_down"

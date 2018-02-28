@@ -9,11 +9,6 @@
     android:orientation="vertical"
     tools:context="basenet.better.basenet.okhttp.OkhttpUploadActivity">
 
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/textInputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteX="0dp">
 
         <EditText
             android:id="@+id/et_down_url"
@@ -22,10 +17,9 @@
             android:hint="下载地址"
             android:text="http://10.0.2.11:8080/myTestWeb/DownServlet"
             />
-    </android.support.design.widget.TextInputLayout>
 
     <Button
-        android:id="@+id/upload"
+        android:id="@+id/down"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="下载"/>
@@ -49,6 +43,29 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="0/0"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="暂停"/>
+        <Button
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:id="@+id/down_continue_"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="继续"/>
+        <Button
+            android:id="@+id/re_startDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重新下载"/>
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"

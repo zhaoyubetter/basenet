@@ -16,102 +16,192 @@ import java.util.Map;
 import basenet.better.basenet.R;
 import basenet.better.basenet.utils.PermissionUtils;
 import lib.basenet.NetUtils;
+import lib.basenet.okhttp.DownloadFileInfo;
+import lib.basenet.okhttp.DownloadFileManager;
 import lib.basenet.okhttp.OkHttpRequest;
+import lib.basenet.request.AbsDownloadRequestCallback;
 import lib.basenet.request.AbsRequest;
 import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
 
-public class OkhttpDownActivity extends AppCompatActivity {
+public class OkhttpDownActivity extends AppCompatActivity implements View.OnClickListener {
 
-	final String TAG = "down";
+    final String TAG = "down";
 
-	EditText et_down_url;
-	ProgressBar progress;
-	TextView progressTV;
-	TextView error;
+    EditText et_down_url;
+    ProgressBar progress;
+    TextView progressTV;
+    TextView error;
 
-	AbsRequest request;
+    AbsRequest request;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_okhttp_down);
+    final String downUrl = "http://111.231.206.52:8080/yu/hehe.jpg";
 
-		et_down_url = (EditText) findViewById(R.id.et_down_url);
-		progress = (ProgressBar) findViewById(R.id.progress);
-		progressTV = (TextView) findViewById(R.id.progressTV);
-		error = (TextView) findViewById(R.id.error);
-		progress.setMax(100);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_okhttp_down);
 
-		et_down_url.setText("http://storage.jd.com/jd.jme.production.client/JDME_3.3.0.apk");
+        et_down_url = (EditText) findViewById(R.id.et_down_url);
+        progress = (ProgressBar) findViewById(R.id.progress);
+        progressTV = (TextView) findViewById(R.id.progressTV);
+        error = (TextView) findViewById(R.id.error);
+        progress.setMax(100);
 
-		findViewById(R.id.upload).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				upload();
-			}
-		});
+        et_down_url.setText(downUrl);
 
-		findViewById(R.id.cancel).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				NetUtils.getInstance().cancel(TAG);
-				//if(request != null) {
-				//	request.cancel();
-				//}
-			}
-		});
-	}
+        findViewById(R.id.down).setOnClickListener(this);
+        findViewById(R.id.cancel).setOnClickListener(this);
+        findViewById(R.id.pause).setOnClickListener(this);
+        findViewById(R.id.down_continue_).setOnClickListener(this);
+        findViewById(R.id.re_startDown).setOnClickListener(this);
+    }
 
 
-	private void upload() {
-		PermissionUtils.checkOnePermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, "权限申请", new Runnable() {
-			@Override
-			public void run() {
-				realUpload();
-			}
-		});
-	}
+    private void down() {
+        PermissionUtils.checkOnePermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, "权限申请", new Runnable() {
+            @Override
+            public void run() {
+                realDown();
+            }
+        });
+    }
 
-	private void realUpload() {
-		error.setText("");
+    private void realDown() {
+        error.setText("");
+        Map<String, File> uploads = new HashMap<>();
+        final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File file = new File(absolutePath + "/" + "headfirst.apk");
+        request = new OkHttpRequest.Builder().url(et_down_url.getText().toString())
+                .downFile(file)
+                .callback(new AbsRequestCallBack() {
+                    @Override
+                    public void onSuccess(Response response) {
+                        super.onSuccess(response);
+                    }
 
-		Map<String, File> uploads = new HashMap<>();
-		final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
-		File file = new File(absolutePath + "/" + "headfirst.apk");
+                    @Override
+                    public void onFailure(final Throwable e) {
+                        super.onFailure(e);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                error.setText(e.toString());
+                            }
+                        });
+                    }
 
-		request = new OkHttpRequest.Builder().url(et_down_url.getText().toString())
-				.downFile(file)
-				.callback(new AbsRequestCallBack() {
-					@Override
-					public void onSuccess(Response response) {
-						super.onSuccess(response);
-					}
+                    @Override
+                    public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+                        super.onProgressUpdate(contentLength, bytesRead, done);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
+                                progressTV.setText(contentLength + "/" + bytesRead);
+                            }
+                        });
+                    }
+                }).tag(TAG)
+                .build();
+        request.request();
+    }
 
-					@Override
-					public void onFailure(final Throwable e) {
-						super.onFailure(e);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								error.setText(e.toString());
-							}
-						});
-					}
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.down:
+                PermissionUtils.checkOnePermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, "权限申请", new Runnable() {
+                    @Override
+                    public void run() {
+//				down();
+                        downPart();
+                    }
+                });
+                break;
+            case R.id.cancel:
+                NetUtils.getInstance().cancel(TAG);
+                break;
+            case R.id.pause:
+                if (downloadFileManager != null) {
+                    downloadFileManager.stopDownload(downloadFileInfo);
+                }
+                break;
+            case R.id.down_continue_:
+                if (downloadFileManager != null) {
+                    downloadFileManager.startDownload(downloadFileInfo);
+                }
+                break;
+            case R.id.re_startDown:
+                downloadFileManager.deleteDownload(downloadFileInfo);
+                if (downloadFileManager != null) {
+                    downloadFileManager.startDownload(downloadFileInfo);
+                }
+                break;
+        }
+    }
 
-					@Override
-					public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
-						super.onProgressUpdate(contentLength, bytesRead, done);
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
-								progressTV.setText(contentLength + "/" + bytesRead);
-							}
-						});
-					}
-				}).tag(TAG)
-				.build();
-		request.request();
-	}
+    private DownloadFileInfo downloadFileInfo;
+    private DownloadFileManager downloadFileManager;
+
+    private void downPart() {
+        if(downloadFileInfo != null && downloadFileInfo.getStatus() != DownloadFileInfo.SUCCESS ) {
+            return;
+        }
+
+        downloadFileInfo = new DownloadFileInfo(et_down_url.getText().toString(),
+                Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaa.jpq");
+        downloadFileManager = new DownloadFileManager(new AbsDownloadRequestCallback() {
+            @Override
+            public void onSuccess(final Response<String> response) {
+                super.onSuccess(response);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                    }
+                });
+            }
+
+            @Override
+            public void onStart() {
+                super.onStart();
+            }
+
+            @Override
+            public void onFailure(final Throwable e) {
+                super.onFailure(e);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        error.setText(e.toString());
+                    }
+                });
+            }
+
+            @Override
+            public void onStop(final DownloadFileInfo fileInfo) {
+                super.onStop(fileInfo);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progress.setProgress((int) (fileInfo.currentFinished * 1.0f / fileInfo.fileSize * 100));
+                        progressTV.setText(fileInfo.fileSize + "/" + fileInfo.currentFinished);
+                    }
+                });
+            }
+
+            @Override
+            public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+                super.onProgressUpdate(contentLength, bytesRead, done);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progress.setProgress((int) (bytesRead * 1.0f / contentLength * 100));
+                        progressTV.setText(contentLength + "/" + bytesRead);
+                    }
+                });
+            }
+        });
+        downloadFileManager.startDownload(downloadFileInfo);
+    }
 }

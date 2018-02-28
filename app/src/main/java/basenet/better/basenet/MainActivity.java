@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.testMimeType).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String type = FileUtils.getMimeType("http://storage.jd.com/tripitaka-jenkins/json.mp3");
+                String type = FileUtils.getMimeType("具体路径");
                 MediaType.parse(type);
                 Toast.makeText(getApplicationContext(), MediaType.parse(type).toString(), Toast.LENGTH_SHORT).show();
                 test();

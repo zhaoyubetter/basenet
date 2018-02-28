@@ -33,11 +33,11 @@ import okhttp3.Response;
  * okhttp 类
  * Created by zhaoyu1 on 2017/3/7.
  * <p>
- * update log: 2017/05/18
+ * addOrUpdate log: 2017/05/18
  * 1.下载文件时，更新监听下载文件进度方法，修复，下载无法cancel问题；
  * 2.将okhttpclient的创建方法移入 {@link NetUtils#getOkHttpClient()}
  * <p>
- * update log : 2017/05/19
+ * addOrUpdate log : 2017/05/19
  * 1.新增，同步请求，新增 {@link #mIsSync} 成员变量
  * 2.同步请求，请使用 Request.cancel()进行请求取消
  */
