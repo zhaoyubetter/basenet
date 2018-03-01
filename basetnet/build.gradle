@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'com.novoda.bintray-release'
 
-def VERSION = '0.0.8'
+def VERSION = '0.0.9'
 
 //  上传命令：gradlew clean build bintrayUpload -PbintrayUser=zhaoyubetter -PbintrayKey=key -PdryRun=false
 
