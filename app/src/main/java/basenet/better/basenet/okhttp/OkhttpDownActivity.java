@@ -124,34 +124,33 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
                 break;
             case R.id.pause:
                 if (downloadFileManager != null) {
-                    downloadFileManager.stopDownload(downloadFileInfo);
+                    downloadFileManager.stopDownload();
                 }
                 break;
             case R.id.down_continue_:
                 if (downloadFileManager != null) {
-                    downloadFileManager.startDownload(downloadFileInfo);
+                    downloadFileManager.startDownload();
                 }
                 break;
             case R.id.re_startDown:
-                downloadFileManager.deleteDownload(downloadFileInfo);
+                downloadFileManager.deleteDownload();
                 if (downloadFileManager != null) {
-                    downloadFileManager.startDownload(downloadFileInfo);
+                    downloadFileManager.startDownload();
                 }
                 break;
         }
     }
 
-    private DownloadFileInfo downloadFileInfo;
     private DownloadFileManager downloadFileManager;
 
     private void downPart() {
-        if(downloadFileInfo != null && downloadFileInfo.getStatus() != DownloadFileInfo.SUCCESS ) {
+        if(downloadFileManager != null && downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOADING ) {
             return;
         }
 
-        downloadFileInfo = new DownloadFileInfo(et_down_url.getText().toString(),
+        DownloadFileInfo downloadFileInfo = new DownloadFileInfo(et_down_url.getText().toString(),
                 Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaa.jpq");
-        downloadFileManager = new DownloadFileManager(new AbsDownloadRequestCallback() {
+        downloadFileManager = new DownloadFileManager(downloadFileInfo, new AbsDownloadRequestCallback() {
             @Override
             public void onSuccess(final Response<String> response) {
                 super.onSuccess(response);
@@ -179,8 +178,7 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
             }
 
             @Override
-            public void onStop(final DownloadFileInfo fileInfo) {
-                super.onStop(fileInfo);
+            public void onStop(long contentLength, long bytesRead, final DownloadFileInfo fileInfo) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -202,6 +200,6 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
                 });
             }
         });
-        downloadFileManager.startDownload(downloadFileInfo);
+        downloadFileManager.startDownload();
     }
 }

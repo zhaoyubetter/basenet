@@ -20,32 +20,31 @@ import okhttp3.Response;
  * Created by liyu20 on 2018/2/27.
  */
 public final class DownloadFileManager {
-    private OkHttpClient okHttpClient;
-    private DownloadFileInfo fileInfo;
-    private AbsDownloadRequestCallback downloadListener;
+    private final OkHttpClient okHttpClient;
+    private final AbsDownloadRequestCallback downloadListener;
+    private final DownloadFileInfo downloadFileInfo;
 
-    public DownloadFileManager() {
-        init();
-    }
-
-    public DownloadFileManager(AbsDownloadRequestCallback downloadListener) {
-        this.downloadListener = downloadListener;
-        init();
-    }
-
-    private void init() {
+    public DownloadFileManager(DownloadFileInfo fileInfo, AbsDownloadRequestCallback downloadListener) {
+        if(fileInfo == null || fileInfo.fileUrl == null || fileInfo.localFilePath == null) {
+            throw new RuntimeException("fileInfo or fileUrl or localFilePath  cannot be a null");
+        }
         this.okHttpClient = NetUtils.getInstance().getOkHttpClient();
+        this.downloadListener = downloadListener;
+        this.downloadFileInfo = fileInfo;
+    }
+
+    public DownloadFileManager(String downUrl, String localFileFullPath, AbsDownloadRequestCallback downloadListener) {
+        this(new DownloadFileInfo(downUrl, localFileFullPath), downloadListener);
+    }
+
+    public int getStatus() {
+        return downloadFileInfo.status;
     }
 
     /**
      * 移除下载任务
-     *
-     * @param downloadFileInfo
      */
-    public void deleteDownload(DownloadFileInfo downloadFileInfo) {
-        if (downloadFileInfo == null || downloadFileInfo.fileUrl == null || downloadFileInfo.localFilePath == null) {
-            return;
-        }
+    public void deleteDownload() {
         NetUtils.getInstance().cancel(this.toString()); // 移除任務
         DownFileUtil.remove(downloadFileInfo);
         downloadFileInfo.reset();   // 清0
@@ -55,37 +54,33 @@ public final class DownloadFileManager {
     /**
      * 停止下载任务
      *
-     * @param downloadFileInfo
      */
-    public void stopDownload(DownloadFileInfo downloadFileInfo) {
-        if (downloadFileInfo == null || downloadFileInfo.fileUrl == null || downloadFileInfo.localFilePath == null) {
-            return;
-        }
+    public void stopDownload() {
         downloadFileInfo.status = DownloadFileInfo.DOWNLOAD_PAUSE;
         DownFileUtil.addOrUpdate(downloadFileInfo);
     }
 
-    public void startDownload(DownloadFileInfo fileInfo) {
-        if (fileInfo == null || fileInfo.fileUrl == null || fileInfo.localFilePath == null) {
+    /**
+     * 开始下载
+     */
+    public void startDownload() {
+        DownloadFileInfo fileInfo = downloadFileInfo;
+        // 0. 当前正在下载，return
+        if (downloadFileInfo.status == DownloadFileInfo.DOWNLOADING) {
             return;
         }
-
         // 1. 是否有断点信息
         final DownloadFileInfo cacheFileInfo = DownFileUtil.getCacheFileInfo(fileInfo);
-        if (cacheFileInfo != null && cacheFileInfo.status == DownloadFileInfo.DOWNLOADING) {
-            return;
-        }
+
         if (cacheFileInfo != null) {  // 賦值進度
             fileInfo.currentFinished = cacheFileInfo.currentFinished;
             fileInfo.fileSize = cacheFileInfo.fileSize;
         }
+        DownFileUtil.addOrUpdate(fileInfo);
         downloadFile(fileInfo);
     }
 
     private void downloadFile(final DownloadFileInfo fileInfo) {
-        if (fileInfo.fileUrl == null || fileInfo.localFilePath == null) {
-            return;
-        }
         //已有下载信息，则添加Header，若无则正常请求
         Request.Builder builder = new Request.Builder();
         builder.tag(this.toString());
@@ -168,7 +163,7 @@ public final class DownloadFileManager {
                         if (fileInfo.status != DownloadFileInfo.DOWNLOADING) {
                             randomFile.close();
                             if (downloadListener != null) {
-                                downloadListener.onStop(fileInfo);
+                                downloadListener.onStop(fileInfo.fileSize, fileInfo.currentFinished, fileInfo);
                             }
                             return;
                         }
@@ -191,9 +186,5 @@ public final class DownloadFileManager {
                 }
             }
         });
-    }
-
-    public void setDownloadListener(AbsDownloadRequestCallback downloadListener) {
-        this.downloadListener = downloadListener;
     }
 }

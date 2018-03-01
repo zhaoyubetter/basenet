@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 断点下载文件信息
  */
-public class DownloadFileInfo implements Serializable{
+public final class DownloadFileInfo implements Serializable{
     //状态值
     //下载成功：完成
     public static final int SUCCESS = 0;
@@ -41,9 +41,5 @@ public class DownloadFileInfo implements Serializable{
     protected void reset() {
         currentFinished = 0;
         this.status = NOT_BEGIN;
-    }
-
-    public int getStatus() {
-        return this.status;
     }
 }
