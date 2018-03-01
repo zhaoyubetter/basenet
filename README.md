@@ -39,6 +39,8 @@
 --- 2017-01-10
 - 新增 `onCancel` 方法，默认不实现；
 - tag 0.0.8
+--- 2018-03-01
+- 新增 `断点下载`支持，用新类实现`DownloadFileManager`
 
 # 配置拦截器
 ```java
@@ -232,7 +234,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.8'
+  	compile 'com.github.lib:basenet:0.0.9'
 
   # 其他(一些实例请参考 app 的例子代码)
  
