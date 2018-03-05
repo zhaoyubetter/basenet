@@ -41,6 +41,8 @@
 - tag 0.0.8
 --- 2018-03-01
 - 新增 `断点下载`支持，用新类实现`DownloadFileManager`
+--- 2018-03-05
+- 修复断点下载问题；
 
 # 配置拦截器
 ```java
@@ -234,7 +236,7 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   具体请参考：PostCacheInterceptor.java类；
 
   # gradle构建依赖:
-  	compile 'com.github.lib:basenet:0.0.9'
+  	compile 'com.github.lib:basenet:1.0.0'
 
   # 其他(一些实例请参考 app 的例子代码)
  
