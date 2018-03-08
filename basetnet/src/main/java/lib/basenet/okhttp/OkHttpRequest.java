@@ -90,7 +90,7 @@ public class OkHttpRequest extends AbsRequest {
             @Override
             public void onFailure(final Call call, final IOException e) {
                 if (null != mCallBack) {  // not cancel,so it's real exception
-                    if(call != null && call.isCanceled()) {
+                    if (call != null && call.isCanceled()) {
                         deliverCallBack(new Runnable() {
                             @Override
                             public void run() {
@@ -111,36 +111,28 @@ public class OkHttpRequest extends AbsRequest {
             @Override
             public void onResponse(final Call call, final Response response) {
                 if (null != mCallBack) {
+                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
                     headerMap = getResponseHeaders(response);
-                    if (response.isSuccessful()) {
-                        try {
-                            parseFileDownResponse(response);
-                        } catch (final IOException e) {
-                            deliverCallBack(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mCallBack.onFailure(e);
-                                }
-                            });
-                            return;
-                        }
-
-                        final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
-                        myResponse.statusCode = response.code();
+                    try {
+                        parseFileDownResponse(response);
+                    } catch (final IOException e) {
                         deliverCallBack(new Runnable() {
                             @Override
                             public void run() {
-                                mCallBack.onSuccess(myResponse);
+                                mCallBack.onFailure(e);
                             }
                         });
-                    } else {
-                        deliverCallBack(new Runnable() {
-                            @Override
-                            public void run() {
-                                mCallBack.onFailure(new Exception(response.code() + " " + response.message()));
-                            }
-                        });
+                        return;
                     }
+
+                    myResponse.statusCode = response.code();
+                    myResponse.message = response.message();
+                    deliverCallBack(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCallBack.onSuccess(myResponse);
+                        }
+                    });
                 }
             }
         });
@@ -244,14 +236,13 @@ public class OkHttpRequest extends AbsRequest {
         // 走异步
         mCall = tClient.newCall(request);
         mCall.enqueue(new Callback() {
-            boolean isSuccess = false;                       // 是否成功
             Map<String, String> headerMap = null;            // 响应头
             String returnBody = null;                        // 响应体
 
             @Override
             public void onFailure(Call call, final IOException e) {
                 if (null != mCallBack) {  // not cancel,so it's real exception
-                    if(call != null && call.isCanceled()) {
+                    if (call != null && call.isCanceled()) {
                         deliverCallBack(new Runnable() {
                             @Override
                             public void run() {
@@ -273,31 +264,20 @@ public class OkHttpRequest extends AbsRequest {
             public void onResponse(Call call, Response response) throws IOException {
                 if (null != mCallBack) {
                     headerMap = getResponseHeaders(response);
-                    if (response.isSuccessful()) {
-                        isSuccess = true;
-                        returnBody = response.body().string();    // 字符串响应体
-                        final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
-                        myResponse.statusCode = response.code();
-                        myResponse.message = response.message();
-                        //Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
-                        //Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
-                        myResponse.isFromCache = response.networkResponse() == null;
-                        deliverCallBack(new Runnable() {
-                            @Override
-                            public void run() {
-                                mCallBack.onSuccess(myResponse);
-                            }
-                        });
-                    } else {
-                        isSuccess = false;
-                        returnBody = response.code() + " " + response.message();
-                        deliverCallBack(new Runnable() {
-                            @Override
-                            public void run() {
-                                mCallBack.onFailure(new Exception(returnBody));
-                            }
-                        });
-                    }
+                    returnBody = response.body().string();    // 字符串响应体
+                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
+                    myResponse.statusCode = response.code();
+                    myResponse.message = response.message();
+                    //Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
+                    //Log.e("okhttp net", "" + response.networkResponse());        // 服务器中
+                    myResponse.isFromCache = response.networkResponse() == null;
+                    deliverCallBack(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCallBack.onSuccess(myResponse);
+                        }
+                    });
+
                 }
             }
         });
@@ -330,24 +310,17 @@ public class OkHttpRequest extends AbsRequest {
         String returnBody = null;                        // 响应体
         try {
             Response response = mCall.execute();
-            if (response.isSuccessful()) {
-                returnBody = response.body().string();    // 字符串响应体
-                myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
-                myResponse.statusCode = response.code();
-                myResponse.message = response.message();
-                myResponse.isFromCache = response.networkResponse() == null;
-                if (null != mCallBack) {
-                    mCallBack.onSuccess(myResponse);
-                }
-            } else {
-                returnBody = response.code() + " " + response.message();
-                if (null != mCallBack) {
-                    mCallBack.onFailure(new Exception(returnBody));
-                }
+            returnBody = response.body().string();    // 字符串响应体
+            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
+            myResponse.statusCode = response.code();
+            myResponse.message = response.message();
+            myResponse.isFromCache = response.networkResponse() == null;
+            if (null != mCallBack) {
+                mCallBack.onSuccess(myResponse);
             }
         } catch (final IOException e) {
             if (null != mCallBack) {  // not cancel,so it's real exception
-                if(mCall != null && mCall.isCanceled()) {
+                if (mCall != null && mCall.isCanceled()) {
                     mCallBack.onCancel();
                 } else {
                     mCallBack.onFailure(e);
@@ -372,33 +345,28 @@ public class OkHttpRequest extends AbsRequest {
             Map<String, String> headerMap = null;            // 响应头
             Response response = mCall.execute();
             headerMap = getResponseHeaders(response);
-            if (response.isSuccessful()) {
-                try {
-                    parseFileDownResponse(response);
-                } catch (final IOException e) {
-                    if (null != mCallBack) {  // not cancel,so it's real exception
-                        if(mCall != null && mCall.isCanceled()) {
-                            mCallBack.onCancel();
-                        } else {
-                            mCallBack.onFailure(e);
-                        }
+            try {
+                parseFileDownResponse(response);
+            } catch (final IOException e) {
+                if (null != mCallBack) {  // not cancel,so it's real exception
+                    if (mCall != null && mCall.isCanceled()) {
+                        mCallBack.onCancel();
+                    } else {
+                        mCallBack.onFailure(e);
                     }
-                    return null;
                 }
+                return null;
+            }
 
-                myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
-                myResponse.statusCode = response.code();
-                if (null != mCallBack) {
-                    mCallBack.onSuccess(myResponse);
-                }
-            } else {
-                if (null != mCallBack) {
-                    mCallBack.onFailure(new Exception(response.code() + " " + response.message()));
-                }
+            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+            myResponse.statusCode = response.code();
+            myResponse.message = response.message();
+            if (null != mCallBack) {
+                mCallBack.onSuccess(myResponse);
             }
         } catch (IOException e) {
             if (null != mCallBack) {  // not cancel,so it's real exception
-                if(mCall != null && mCall.isCanceled()) {
+                if (mCall != null && mCall.isCanceled()) {
                     mCallBack.onCancel();
                 } else {
                     mCallBack.onFailure(e);
