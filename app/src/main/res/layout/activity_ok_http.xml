@@ -52,5 +52,11 @@
         android:layout_height="wrap_content"
         android:text="同步请求测试"/>
 
+    <Button
+        android:id="@+id/upload_breakpoint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="断点上传测试"/>
+
 </LinearLayout>
 

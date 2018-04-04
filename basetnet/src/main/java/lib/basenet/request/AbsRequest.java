@@ -14,7 +14,7 @@ import java.util.Map;
  * @version 1.0
  * @since 2017/3/6.
  * =========================== UPDATE LOG: =================================
- * Date: 2017/3/9 add upload file and down file support
+ * Date: 2017/3/9 add start file and down file support
  * Date: 2017/4/17 add get request params, such as getUrl
  * =========================== UPDATE LOG: =================================
  */
@@ -58,7 +58,7 @@ public abstract class AbsRequest implements IRequest {
     protected int mReqType;
 
     /**
-     * files need to upload
+     * files need to start
      */
     protected Map<String, File> mUploadFiles;
 

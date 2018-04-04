@@ -12,6 +12,7 @@ import basenet.better.basenet.okhttp.OkhttpDownActivity;
 import basenet.better.basenet.okhttp.OkhttpGetActivity;
 import basenet.better.basenet.okhttp.OkhttpTimeoutActivity;
 import basenet.better.basenet.okhttp.OkhttpUploadActivity;
+import basenet.better.basenet.okhttp.OkhttpUploadBreakActivity;
 
 public class OkHttpActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -28,6 +29,7 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
 		findViewById(R.id.download).setOnClickListener(this);
 		findViewById(R.id.cache).setOnClickListener(this);
 		findViewById(R.id.sync).setOnClickListener(this);
+		findViewById(R.id.upload_breakpoint).setOnClickListener(this);
 	}
 
 	@Override
@@ -54,6 +56,9 @@ public class OkHttpActivity extends AppCompatActivity implements View.OnClickLis
 				break;
 			case R.id.sync:
 				intent = new Intent(this, OKHttpSyncActivity.class);
+				break;
+			case R.id.upload_breakpoint:
+				intent = new Intent(this, OkhttpUploadBreakActivity.class);
 				break;
 		}
 		if (intent != null) {

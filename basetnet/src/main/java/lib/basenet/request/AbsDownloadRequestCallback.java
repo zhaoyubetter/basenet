@@ -1,6 +1,6 @@
 package lib.basenet.request;
 
-import lib.basenet.okhttp.DownloadFileInfo;
+import lib.basenet.okhttp.upload_down.DownloadFileInfo;
 
 /**
  * 注意，会掉实在 okhttp 线程中执行的

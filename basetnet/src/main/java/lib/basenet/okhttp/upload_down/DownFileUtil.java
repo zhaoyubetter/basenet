@@ -1,4 +1,4 @@
-package lib.basenet.okhttp;
+package lib.basenet.okhttp.upload_down;
 
 
 import java.io.File;
@@ -50,7 +50,7 @@ class DownFileUtil {
      *
      * @param downloadFileInfo
      */
-    public static void remove(DownloadFileInfo downloadFileInfo) {
+    public synchronized static void remove(DownloadFileInfo downloadFileInfo) {
         String key = getKey(downloadFileInfo.fileUrl, downloadFileInfo.localFilePath);
         final DiskLruCache cache = getLruCache();
         try {
@@ -66,7 +66,7 @@ class DownFileUtil {
      * @param downloadFileInfo
      * @return
      */
-    public static DownloadFileInfo getCacheFileInfo(DownloadFileInfo downloadFileInfo) {
+    public synchronized static DownloadFileInfo getCacheFileInfo(DownloadFileInfo downloadFileInfo) {
         DownloadFileInfo cacheDownFileInfo = null;
         try {
             final DiskLruCache cache = getLruCache();
@@ -90,7 +90,7 @@ class DownFileUtil {
      *
      * @param downloadFileInfo
      */
-    public static void addOrUpdate(DownloadFileInfo downloadFileInfo) {
+    public synchronized static void addOrUpdate(DownloadFileInfo downloadFileInfo) {
         try {
             // 1. 先删除，再新增
             final DiskLruCache cache = getLruCache();
@@ -108,6 +108,69 @@ class DownFileUtil {
             }
         } catch (Exception e) {
 
+        }
+    }
+
+
+    /**
+     * 获取上传文件的缓存信息
+     *
+     * @param segmentInfo
+     * @return
+     */
+    public synchronized static FileSegmentInfo getCacheUploadInfo(FileSegmentInfo segmentInfo) {
+        FileSegmentInfo cacheInfo = null;
+        try {
+            final DiskLruCache cache = getLruCache();
+            final String key = getKey(segmentInfo.getSrcFile().getAbsolutePath(), "");
+            final DiskLruCache.Snapshot snapshot = cache.get(key);
+            if (snapshot != null) {
+                final BufferedSource buffer = Okio.buffer(snapshot.getSource(0));
+                ObjectInputStream ois = new ObjectInputStream(buffer.inputStream());
+                cacheInfo = (FileSegmentInfo) ois.readObject();
+                ois.close();
+            }
+        } catch (Exception e) {
+            cacheInfo = null;
+        }
+        return cacheInfo;
+    }
+
+    /**
+     * 更新，or 设置
+     *
+     * @param info
+     */
+    public synchronized static void addOrUpdate(FileSegmentInfo info) {
+        try {
+            // 1. 先删除，再新增
+            final DiskLruCache cache = getLruCache();
+            final String key = getKey(info.getSrcFile().getAbsolutePath(), "");
+            cache.remove(key);
+
+            DiskLruCache.Editor editor = cache.edit(key);
+            if (editor != null) {
+                BufferedSink sink = Okio.buffer(editor.newSink(0));
+                ObjectOutputStream oos = new ObjectOutputStream(sink.outputStream());
+                oos.writeObject(info);
+                editor.commit();
+                oos.flush();
+                oos.close();
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    /**
+     * 移除上传文件缓存信息
+     */
+    public static synchronized void remove(FileSegmentInfo info) {
+        String key = getKey(info.getSrcFile().getAbsolutePath(),"");
+        final DiskLruCache cache = getLruCache();
+        try {
+            cache.remove(key);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
