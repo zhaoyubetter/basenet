@@ -93,7 +93,7 @@ public class OkhttpUploadBreakActivity extends AppCompatActivity implements View
                     // == 1.获取服务端id
                     UploadDemoCode.obtainFileCode(info, OBTAIN_CODE_URL);
                     // === 2.上传
-                    uploadFileManager = new UploadFileManager(info.getSrcFile(), info.getSrcFileID(), UPLOAD_FILE_URL, new AbsDownloadRequestCallback() {
+                    uploadFileManager = new UploadFileManager(info.getSrcFile(), info.getServerFileID(), UPLOAD_FILE_URL, new AbsDownloadRequestCallback() {
 
                         @Override
                         public void onProgressUpdate(final long contentLength, final long bytesRead, boolean done) {
