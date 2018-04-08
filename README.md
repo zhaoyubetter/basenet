@@ -237,6 +237,24 @@ new OkHttpRequest.Builder().url("https://www.github.com")
   ```
   - 利用okhttp，应用层拦截器，如果是post时，询问缓存，有则取出，并终止执行其他拦截器，
   具体请参考：PostCacheInterceptor.java类；
+  
+   # 断点文件上传原理：
+     断点上传，实际上不是真正的断点上传，而是将文件分块，分块上传；
+     断点上传，需要服务器的支持（需要跟服务端协商好，接口与对应的接口字段）;
+     断点上传，采用单线程的上传方式，一片接一片进行上传（完美）
+      
+     步骤：
+     1. 初次上传时，将本地待上传的文件（文件名，大小，其md5值），拼接待上传文件信息json，格式为： {"fileName":"", "fileSize": , "md5": ""}
+             传给服务器端，然后服务端会生成一个 id，客户端获取后，并设置当前上传的文件id，用来标识这个上传的文件；
+           参考：{@link UploadDemoCode#obtainFileCode(FileSegmentInfo, String)}
+     2. 将大文件，切割成多个分片，并将这些分片形成临时文件并，顺序上传这些分片，上传参数为：
+          - 当前上传的分片文件： files;
+          - 服务端返回的文件Id： fileId;
+          - 开始位置          ： fileStartRange;
+          - 结束位置          ： fileEndRange
+     3. 如果上传中途失败，客户端会缓存上次成功的切片位置；
+     4. 再次上传时，将从切片位置上传；
+
 
   # gradle构建依赖:
   	compile 'com.github.lib:basenet:1.0.0'
