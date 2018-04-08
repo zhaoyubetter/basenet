@@ -12,19 +12,42 @@ import lib.basenet.request.IRequest;
 
 /**
  * 断点上传，实际上不是真正的断点上传，而是将文件分块，分块上传；
- * 断点上传，需要服务器的支持;
+ * 断点上传，需要服务器的支持（需要跟服务端协商好，接口与对应的接口字段）;
  * 断点上传，采用单线程的上传方式，一片接一片进行上传（完美）
  * <p>
  * <pre>
- *     1. 初次上传时，将本地待上传的文件，拼接待上传文件信息json，格式为： {"fileName":"", "fileSize": , "md5": ""}
- *        传给服务器端，然后服务端会生成一个 id，客户端获取后，并设置当前上传的文件id（再缓存），用来标识这个上传的文件；
- *        参考：link
+ *     1. 初次上传时，将本地待上传的文件（文件名，大小，其md5值），拼接待上传文件信息json，格式为： {"fileName":"", "fileSize": , "md5": ""}
+ *        传给服务器端，然后服务端会生成一个 id，客户端获取后，并设置当前上传的文件id，用来标识这个上传的文件；
+ *        参考：{@link UploadDemoCode#obtainFileCode(FileSegmentInfo, String)}
+ *     2. 将大文件，切割成多个分片，并将这些分片形成临时文件并，顺序上传这些分片，上传参数为：
+ *         a.当前上传的分片文件： files;
+ *         b.服务端返回的文件Id： fileId;
+ *         c.开始位置          ： fileStartRange;
+ *         d.结束位置          ： fileEndRange
  *     2. 如果上传中途失败，客户端会缓存上次成功的切片位置；
- *     3. 再次上传时，
+ *     3. 再次上传时，将从切片位置上传；
  * </pre>
  * Created by liyu20 on 2018/3/8.
  */
 public class UploadFileManager {
+
+    /**
+     * key : 分片文件名
+     */
+    private static final String KEY_UPLOAD_FILE = "files";
+    /**
+     * key : server返回ID
+     */
+    private static final String KEY_SERVER_ID = "fileId";
+    /**
+     * key: 分片开始位置
+     */
+    private static final String KEY_FILE_START_RANGE = "fileStartRange";
+    /**
+     * key: 分片结束位置
+     */
+    private static final String KEY_FILE_END_RANGE = "fileEndRange";
+
     /**
      * 文件片段
      */
@@ -41,11 +64,11 @@ public class UploadFileManager {
      * UploadFileManager 构造
      *
      * @param srcFile   需要上传的源文件
-     * @param serverId  serverId
+     * @param serverId  serverId 服务端返回serverId，用来唯一标识本地上传的文件
      * @param uploadUrl 上传url
      * @param listener  监听器
      */
-    public UploadFileManager(File srcFile, final String serverId, final String uploadUrl, final AbsDownloadRequestCallback listener) {
+    public UploadFileManager(final File srcFile, final String serverId, final String uploadUrl, final AbsDownloadRequestCallback listener) {
         if (srcFile == null || !srcFile.exists()) {
             throw new NullPointerException("file is invalid");
         }
@@ -59,7 +82,7 @@ public class UploadFileManager {
         this.uploadUrl = uploadUrl;
 
         // 与服务器进行绑定
-        fileSegmentInfo.setSrcFileID(serverId);
+        fileSegmentInfo.setServerFileID(serverId);
 
         // ===== 是否断点信息（缓存的）
         FileSegmentInfo cache = DownFileUtil.getCacheUploadInfo(fileSegmentInfo);
@@ -124,11 +147,11 @@ public class UploadFileManager {
         }
 
         Map<String, File> fileMap = new HashMap<>();
-        fileMap.put("files", fileSegmentInfo.getFileSegment());     // 当前切片
         Map<String, String> map = new HashMap<>();
-        map.put("fileId", fileSegmentInfo.getSrcFileID());          // 服务端返回的文件ID
-        map.put("fileStartRange", "" + fileSegmentInfo.getSrcFileStart());
-        map.put("fileEndRange", "" + (fileSegmentInfo.getSrcFileStart() + fileSegmentInfo.getFileSegmentSize()));
+        fileMap.put(KEY_UPLOAD_FILE, fileSegmentInfo.getFileSegment());           // 当前切片
+        map.put(KEY_SERVER_ID, fileSegmentInfo.getServerFileID());                // 服务端返回的文件ID
+        map.put(KEY_FILE_START_RANGE, "" + fileSegmentInfo.getSrcFileStart());   // 切片范围
+        map.put(KEY_FILE_END_RANGE, "" + (fileSegmentInfo.getSrcFileStart() + fileSegmentInfo.getFileSegmentSize()));
 
         new OkHttpRequest.Builder()
                 .tag(this.toString())

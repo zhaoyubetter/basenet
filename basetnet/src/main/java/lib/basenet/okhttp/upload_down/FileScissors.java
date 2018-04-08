@@ -35,7 +35,7 @@ final class FileScissors {
             FileOutputStream tempFileOut = new FileOutputStream(tempFile);
 
             int currentSize = 0;
-            byte[] buffer = new byte[2048];
+            byte[] buffer = new byte[4098];
             RandomAccessFile randomFile = new RandomAccessFile(segmentInfo.getSrcFile(), "rwd");
             randomFile.seek(segmentInfo.getSrcFileStart());
             int len;

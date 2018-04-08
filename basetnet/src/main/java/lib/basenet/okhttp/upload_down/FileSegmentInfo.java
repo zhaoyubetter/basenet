@@ -41,7 +41,7 @@ public final class FileSegmentInfo implements Serializable {
     /**
      * 所属文件的序列号（后台返给）
      **/
-    private String srcFileID;
+    private String serverFileID;
     private transient File srcFile;
 
     public FileSegmentInfo(File srcFile) {
@@ -68,8 +68,8 @@ public final class FileSegmentInfo implements Serializable {
         this.srcFileStart = srcFileStart;
     }
 
-    public void setSrcFileID(String srcFileID) {
-        this.srcFileID = srcFileID;
+    public void setServerFileID(String serverFileID) {
+        this.serverFileID = serverFileID;
     }
 
     public void setStatus(int status) {
@@ -100,8 +100,8 @@ public final class FileSegmentInfo implements Serializable {
         return srcFileName;
     }
 
-    public String getSrcFileID() {
-        return srcFileID;
+    public String getServerFileID() {
+        return serverFileID;
     }
 
     public File getSrcFile() {

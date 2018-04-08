@@ -6,8 +6,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 import lib.basenet.NetUtils;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -46,7 +44,7 @@ public class UploadDemoCode {
 
         final Response response = NetUtils.getInstance().getOkHttpClient().newCall(request).execute();
         if (response.isSuccessful()) {
-            fileSegmentInfo.setSrcFileID(new JSONObject(response.body().string()).getString("data")); // 获取serverID
+            fileSegmentInfo.setServerFileID(new JSONObject(response.body().string()).getString("data")); // 获取serverID
         }
     }
 }
