@@ -40,6 +40,8 @@ import okhttp3.Response;
  * addOrUpdate log : 2017/05/19
  * 1.新增，同步请求，新增 {@link #mIsSync} 成员变量
  * 2.同步请求，请使用 Request.cancel()进行请求取消
+ * 2018-04-09
+ * 1. 修复同步请求时，没有设置Header问题
  */
 public class OkHttpRequest extends AbsRequest {
 
@@ -85,8 +87,6 @@ public class OkHttpRequest extends AbsRequest {
         // 执行下载逻辑
         mCall = getClient().newCall(tBuilder.build());
         mCall.enqueue(new Callback() {
-            Map<String, String> headerMap = null;            // 响应头
-
             @Override
             public void onFailure(final Call call, final IOException e) {
                 if (null != mCallBack) {  // not cancel,so it's real exception
@@ -111,8 +111,7 @@ public class OkHttpRequest extends AbsRequest {
             @Override
             public void onResponse(final Call call, final Response response) {
                 if (null != mCallBack) {
-                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
-                    headerMap = getResponseHeaders(response);
+                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, getResponseHeaders(response), mDownFile);
                     try {
                         parseFileDownResponse(response);
                     } catch (final IOException e) {
@@ -236,9 +235,6 @@ public class OkHttpRequest extends AbsRequest {
         // 走异步
         mCall = tClient.newCall(request);
         mCall.enqueue(new Callback() {
-            Map<String, String> headerMap = null;            // 响应头
-            String returnBody = null;                        // 响应体
-
             @Override
             public void onFailure(Call call, final IOException e) {
                 if (null != mCallBack) {  // not cancel,so it's real exception
@@ -263,9 +259,8 @@ public class OkHttpRequest extends AbsRequest {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (null != mCallBack) {
-                    headerMap = getResponseHeaders(response);
-                    returnBody = response.body().string();    // 字符串响应体
-                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
+                    final String returnBody = response.body().string();    // 字符串响应体
+                    final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(OkHttpRequest.this, getResponseHeaders(response), returnBody);
                     myResponse.statusCode = response.code();
                     myResponse.message = response.message();
                     //Log.e("okhttp cache", "" + response.cacheResponse());        // 缓存
@@ -306,12 +301,10 @@ public class OkHttpRequest extends AbsRequest {
         mCall = tClient.newCall(request);
 
         lib.basenet.response.Response myResponse = null;
-        Map<String, String> headerMap = null;            // 响应头
-        String returnBody = null;                        // 响应体
         try {
             Response response = mCall.execute();
-            returnBody = response.body().string();    // 字符串响应体
-            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, returnBody);
+            final String returnBody = response.body().string();    // 字符串响应体
+            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, getResponseHeaders(response), returnBody);
             myResponse.statusCode = response.code();
             myResponse.message = response.message();
             myResponse.isFromCache = response.networkResponse() == null;
@@ -342,9 +335,7 @@ public class OkHttpRequest extends AbsRequest {
         lib.basenet.response.Response myResponse = null;
 
         try {
-            Map<String, String> headerMap = null;            // 响应头
             Response response = mCall.execute();
-            headerMap = getResponseHeaders(response);
             try {
                 parseFileDownResponse(response);
             } catch (final IOException e) {
@@ -358,7 +349,7 @@ public class OkHttpRequest extends AbsRequest {
                 return null;
             }
 
-            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, headerMap, mDownFile);
+            myResponse = new lib.basenet.response.Response(OkHttpRequest.this, getResponseHeaders(response), mDownFile);
             myResponse.statusCode = response.code();
             myResponse.message = response.message();
             if (null != mCallBack) {
