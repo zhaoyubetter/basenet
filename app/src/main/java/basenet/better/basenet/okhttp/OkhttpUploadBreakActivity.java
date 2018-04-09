@@ -1,9 +1,9 @@
 package basenet.better.basenet.okhttp;
 
 import android.Manifest;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -16,7 +16,6 @@ import java.io.IOException;
 
 import basenet.better.basenet.R;
 import basenet.better.basenet.utils.PermissionUtils;
-import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.okhttp.upload_down.DownloadFileInfo;
 import lib.basenet.okhttp.upload_down.FileSegmentInfo;
 import lib.basenet.okhttp.upload_down.UploadDemoCode;
@@ -79,6 +78,7 @@ public class OkhttpUploadBreakActivity extends AppCompatActivity implements View
     private static final String UPLOAD_FILE_URL = "上传的url";
 
     private void upload() {
+        // 本地文件地址
         final String absolutePath = Environment.getExternalStorageDirectory().getAbsolutePath();
         File file = new File(absolutePath + "/" + "Groovy in Action(EN).pdf");
         final FileSegmentInfo info = new FileSegmentInfo(file);
