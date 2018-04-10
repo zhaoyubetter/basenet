@@ -104,6 +104,7 @@ public final class DownloadFileManager {
                 try {
                     if (new File(cacheFileInfo.localFilePath).exists()) {
                         final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(null, new HashMap<>(), cacheFileInfo.localFilePath);
+                        myResponse.statusCode = 200;
                         downloadListener.onSuccess(myResponse);
                         return;
                     }
