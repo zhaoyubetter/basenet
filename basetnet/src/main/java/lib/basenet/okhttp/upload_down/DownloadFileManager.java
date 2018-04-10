@@ -91,26 +91,33 @@ public final class DownloadFileManager {
             return;
         }
 
-        // 1. 是否有断点信息
-        final DownloadFileInfo cacheFileInfo = DownFileUtil.getCacheFileInfo(downloadFileInfo);
+        // 如果是强制下载
+        if(forceDown) {
+            DownFileUtil.remove(downloadFileInfo);
+            downloadFileInfo.status = DownloadFileInfo.NOT_BEGIN;
+        } else {
+            // 1. 是否有断点信息
+            final DownloadFileInfo cacheFileInfo = DownFileUtil.getCacheFileInfo(downloadFileInfo);
+            if (cacheFileInfo != null) {  // 賦值進度
+                downloadFileInfo.currentFinished = cacheFileInfo.currentFinished;
+                downloadFileInfo.fileSize = cacheFileInfo.fileSize;
+                downloadFileInfo.status = cacheFileInfo.status;
 
-        if (cacheFileInfo != null) {  // 賦值進度
-            downloadFileInfo.currentFinished = cacheFileInfo.currentFinished;
-            downloadFileInfo.fileSize = cacheFileInfo.fileSize;
-            downloadFileInfo.status = cacheFileInfo.status;
-
-            // 如果已完成，并且是非强制下载下，并且文件存在，直接返回成功
-            if (cacheFileInfo.status == DownloadFileInfo.SUCCESS && !forceDown) {
-                try {
-                    if (new File(cacheFileInfo.localFilePath).exists()) {
-                        final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(null, new HashMap<>(), cacheFileInfo.localFilePath);
-                        myResponse.statusCode = 200;
-                        downloadListener.onSuccess(myResponse);
-                        return;
+                // 如果已完成，并且是非强制下载下，并且文件存在，直接返回成功
+                if (cacheFileInfo.status == DownloadFileInfo.SUCCESS) {
+                    try {
+                        if (new File(cacheFileInfo.localFilePath).exists()) {
+                            final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(null, new HashMap<>(), cacheFileInfo.localFilePath);
+                            myResponse.statusCode = 200;
+                            downloadListener.onSuccess(myResponse);
+                            return;
+                        } else {
+                            downloadFileInfo.status = DownloadFileInfo.FAILURE; // 重新下载
+                        }
+                    } catch (Exception e) {
+                        downloadFileInfo.status = DownloadFileInfo.DOWNLOAD_PAUSE;
+                        DownFileUtil.remove(downloadFileInfo);
                     }
-                } catch (Exception e) {
-                    downloadFileInfo.status = DownloadFileInfo.DOWNLOAD_PAUSE;
-                    DownFileUtil.remove(downloadFileInfo);
                 }
             }
         }
