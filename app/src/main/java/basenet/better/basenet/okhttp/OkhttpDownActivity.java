@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 
 	AbsRequest request;
 
-	final String downUrl = "http://111.231.206.52:8080/yu/hehe.jpg";
+	final String downUrl = "http://111.231.206.52:8080/yu/hehe.gif";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,7 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 		findViewById(R.id.pause).setOnClickListener(this);
 		findViewById(R.id.down_continue_).setOnClickListener(this);
 		findViewById(R.id.re_startDown).setOnClickListener(this);
+		findViewById(R.id.force_down).setOnClickListener(this);
 	}
 
 
@@ -110,12 +112,20 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
+			case R.id.force_down:
+				PermissionUtils.checkOnePermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, "权限申请", new Runnable() {
+					@Override
+					public void run() {
+						downPart(true);
+					}
+				});
+				break;
 			case R.id.down:
 				PermissionUtils.checkOnePermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, "权限申请", new Runnable() {
 					@Override
 					public void run() {
 //				down();
-						downPart();
+						downPart(false);
 					}
 				});
 				break;
@@ -144,13 +154,13 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 
 	private DownloadFileManager downloadFileManager;
 
-	private void downPart() {
+	private void downPart(boolean force) {
 		if (downloadFileManager != null && downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOADING) {
 			return;
 		}
 
 		DownloadFileInfo downloadFileInfo = new DownloadFileInfo(et_down_url.getText().toString(),
-				Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaa.jpq");
+				Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaa.gif");
 		downloadFileManager = new DownloadFileManager(downloadFileInfo, new AbsDownloadRequestCallback() {
 			@Override
 			public void onSuccess(final Response<String> response) {
@@ -158,6 +168,7 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
+						Toast.makeText(OkhttpDownActivity.this, "成功了", Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
@@ -201,6 +212,6 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 				});
 			}
 		});
-		downloadFileManager.startDownload();
+		downloadFileManager.startDownload(force);
 	}
 }
