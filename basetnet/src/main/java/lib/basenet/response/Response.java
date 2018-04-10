@@ -41,6 +41,10 @@ public class Response<T> {
 	 */
 	public String message;
 
+	public boolean isSuccessful() {
+		return statusCode >= 200 && statusCode < 300;
+	}
+
 	public Response(AbsRequest request, Map<String, String> headerMap, T body) {
 		this.request = request;
 		this.responseHeader = headerMap;
