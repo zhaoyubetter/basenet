@@ -94,6 +94,10 @@ class DownFileUtil {
         try {
             // 1. 先删除，再新增
             final DiskLruCache cache = getLruCache();
+            // 不缓存下载中，状态
+            if (downloadFileInfo.status == DownloadFileInfo.DOWNLOADING) {
+                downloadFileInfo.status = DownloadFileInfo.FAILURE;
+            }
             final String key = getKey(downloadFileInfo.fileUrl, downloadFileInfo.localFilePath);
             cache.remove(key);
 
@@ -165,7 +169,7 @@ class DownFileUtil {
      * 移除上传文件缓存信息
      */
     public static synchronized void remove(FileSegmentInfo info) {
-        String key = getKey(info.getSrcFile().getAbsolutePath(),"");
+        String key = getKey(info.getSrcFile().getAbsolutePath(), "");
         final DiskLruCache cache = getLruCache();
         try {
             cache.remove(key);
