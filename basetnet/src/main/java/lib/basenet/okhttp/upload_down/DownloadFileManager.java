@@ -1,6 +1,9 @@
 package lib.basenet.okhttp.upload_down;
 
 
+
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +32,10 @@ public final class DownloadFileManager {
     private final OkHttpClient okHttpClient;
     private final AbsDownloadRequestCallback downloadListener;
     private final DownloadFileInfo downloadFileInfo;
+    /**
+     * 控制下载状态
+     */
+    private volatile int currentStatus = DownloadFileInfo.NOT_BEGIN;
 
     public DownloadFileManager(DownloadFileInfo fileInfo, AbsDownloadRequestCallback downloadListener) {
         if (fileInfo == null || fileInfo.fileUrl == null || fileInfo.localFilePath == null) {
@@ -43,6 +50,7 @@ public final class DownloadFileManager {
         // 重新赋值status
         if (cache != null) {
             downloadFileInfo.status = cache.status;
+            currentStatus = (cache.status == DownloadFileInfo.DOWNLOADING ? DownloadFileInfo.NOT_BEGIN : cache.status);
         }
     }
 
@@ -50,33 +58,35 @@ public final class DownloadFileManager {
         this(new DownloadFileInfo(downUrl, localFileFullPath), downloadListener);
     }
 
-    public int getStatus() {
-        return downloadFileInfo.status;
+    public synchronized int getStatus() {
+        return currentStatus;
     }
 
     /**
      * 移除下载任务
      */
-    public void deleteDownload() {
+    public synchronized void deleteDownload() {
         NetUtils.getInstance().cancel(this.toString()); // 移除任務
         DownFileUtil.remove(downloadFileInfo);
         downloadFileInfo.reset();   // 清0
         FileUtils.deleteFile(downloadFileInfo.localFilePath);
+        currentStatus = DownloadFileInfo.NOT_BEGIN;
     }
 
     /**
      * 停止下载任务
      */
-    public void stopDownload() {
+    public synchronized void stopDownload() {
         NetUtils.getInstance().cancel(this.toString()); // 移除任務
         // 完成时，不操作
         if (downloadFileInfo.status != DownloadFileInfo.SUCCESS) {
             downloadFileInfo.status = DownloadFileInfo.DOWNLOAD_PAUSE;
             DownFileUtil.addOrUpdate(downloadFileInfo);
+            currentStatus = DownloadFileInfo.DOWNLOAD_PAUSE;
         }
     }
 
-    public void startDownload() {
+    public  void startDownload() {
         startDownload(false);
     }
 
@@ -85,11 +95,13 @@ public final class DownloadFileManager {
      *
      * @param forceDown 强制重新下载
      */
-    public void startDownload(boolean forceDown) {
+    public synchronized void startDownload(boolean forceDown) {
         // 0. 当前正在下载，return
-        if (downloadFileInfo.status == DownloadFileInfo.DOWNLOADING) {
+        if (currentStatus == DownloadFileInfo.DOWNLOADING) {
             return;
         }
+
+        currentStatus = DownloadFileInfo.DOWNLOADING;
 
         // 如果是强制下载
         if(forceDown) {
@@ -109,6 +121,8 @@ public final class DownloadFileManager {
                         if (new File(cacheFileInfo.localFilePath).exists()) {
                             final lib.basenet.response.Response myResponse = new lib.basenet.response.Response(null, new HashMap<>(), cacheFileInfo.localFilePath);
                             myResponse.statusCode = 200;
+                            currentStatus = DownloadFileInfo.SUCCESS;
+                            downloadListener.onStart();
                             downloadListener.onSuccess(myResponse);
                             return;
                         } else {
@@ -126,7 +140,7 @@ public final class DownloadFileManager {
         downloadFile(downloadFileInfo);
     }
 
-    private void downloadFile(final DownloadFileInfo fileInfo) {
+    private synchronized void downloadFile(final DownloadFileInfo fileInfo) {
         //已有下载信息，则添加Header，若无则正常请求
         Request.Builder builder = new Request.Builder();
         builder.tag(this.toString());
@@ -156,7 +170,7 @@ public final class DownloadFileManager {
         downloadRequest(request, fileInfo, file);
     }
 
-    private void downloadRequest(Request request, final DownloadFileInfo fileInfo, final File file) {
+    private synchronized void downloadRequest(Request request, final DownloadFileInfo fileInfo, final File file) {
         if (downloadListener != null) {
             downloadListener.onStart();
         }
@@ -166,6 +180,7 @@ public final class DownloadFileManager {
             @Override
             public void onFailure(Call call, IOException e) {
                 fileInfo.status = DownloadFileInfo.FAILURE;
+                currentStatus = DownloadFileInfo.FAILURE;
                 DownFileUtil.addOrUpdate(fileInfo);
                 if (downloadListener != null) {
                     if (downloadListener != null && call.isCanceled()) {
@@ -181,6 +196,7 @@ public final class DownloadFileManager {
                 if (!response.isSuccessful()) {
                     //下载失败
                     fileInfo.status = DownloadFileInfo.FAILURE;
+                    currentStatus = DownloadFileInfo.FAILURE;
                     if (downloadListener != null) {
                         downloadListener.onFailure(new Exception(response.code() + " " + response.message()));
                     }
@@ -191,7 +207,7 @@ public final class DownloadFileManager {
                 Map<String, String> respHeader = getResponseHeaders(response);
 
                 InputStream is;
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[8192];
                 int len;
                 try {
                     is = response.body().byteStream();
@@ -220,7 +236,14 @@ public final class DownloadFileManager {
                         }
                         //停止下载
                         if (fileInfo.status != DownloadFileInfo.DOWNLOADING) {
-                            randomFile.close();
+                            try {
+                                randomFile.close();   // 避免关闭流时，异常造成 断点不正确
+                            } catch (IOException e) {
+                                if(fileInfo.currentFinished - len > 0) {
+                                    fileInfo.currentFinished -= len;
+                                }
+                            }
+                            DownFileUtil.addOrUpdate(fileInfo);        // 更新
                             if (downloadListener != null) {
                                 downloadListener.onStop(fileInfo.fileSize, fileInfo.currentFinished, fileInfo);
                             }
@@ -231,6 +254,7 @@ public final class DownloadFileManager {
                     //下载完成
                     randomFile.close();
                     fileInfo.status = DownloadFileInfo.SUCCESS;
+                    currentStatus = DownloadFileInfo.SUCCESS;
                     DownFileUtil.addOrUpdate(fileInfo);        // 更新
                     if (downloadListener != null) {
                         final lib.basenet.response.Response myResponse =
@@ -240,6 +264,7 @@ public final class DownloadFileManager {
                     }
                 } catch (Exception e) {
                     fileInfo.status = DownloadFileInfo.FAILURE;
+                    currentStatus = DownloadFileInfo.FAILURE;
                     DownFileUtil.addOrUpdate(fileInfo); // 更新信息
 
                     if (downloadListener != null) {

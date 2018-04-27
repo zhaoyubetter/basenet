@@ -19,7 +19,7 @@ public final class DownloadFileInfo implements Serializable {
     public static final int NOT_BEGIN = 0;
 
     //下载状态
-    protected int status;
+    protected volatile int status;
     //文件URL地址
     public String fileUrl;
     //文件本地存储地址
