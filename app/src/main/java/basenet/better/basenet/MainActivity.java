@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import basenet.better.basenet.mae.bundles.update.UpdateApkManager;
 import lib.basenet.NetUtils;
 import lib.basenet.okhttp.OkHttpRequest;
 import lib.basenet.request.AbsRequestCallBack;
@@ -59,6 +60,14 @@ public class MainActivity extends AppCompatActivity {
                 MediaType.parse(type);
                 Toast.makeText(getApplicationContext(), MediaType.parse(type).toString(), Toast.LENGTH_SHORT).show();
                 test();
+            }
+        });
+
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UpdateApkManager updateApkManager = new UpdateApkManager(MainActivity.this, NetUtils.getInstance().getOkHttpClient());
+                updateApkManager.checkUpdate();
             }
         });
     }

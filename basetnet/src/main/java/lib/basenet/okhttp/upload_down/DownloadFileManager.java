@@ -2,6 +2,8 @@ package lib.basenet.okhttp.upload_down;
 
 
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -232,6 +234,7 @@ public final class DownloadFileManager {
                         if (downloadListener != null) {
                             downloadListener.onProgressUpdate(fileInfo.fileSize, fileInfo.currentFinished, fileInfo.fileSize == fileInfo.currentFinished);
                         }
+                        //Log.e("better1244", "currentFinish: " + fileInfo.currentFinished + "," + Thread.currentThread().toString());
                         //停止下载
                         if (fileInfo.status != DownloadFileInfo.DOWNLOADING) {
                             try {

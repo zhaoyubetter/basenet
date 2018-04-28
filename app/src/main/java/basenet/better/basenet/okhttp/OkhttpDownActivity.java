@@ -267,45 +267,51 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
 
 
     boolean isAllowMobileNetDownload = false;
+    int stateChangeNum ;
 
     /**
      * 网络监听与继续下载监听广播接收者
      */
     public class NetStateReceiver extends BroadcastReceiver {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            SystemClock.sleep(2000);
+        public void onReceive(final Context context, final Intent intent) {
             if (intent.getAction() != null && intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)
                     && downloadFileManager != null) {
-                int netState = getNetWorkState(context);
-                switch (netState) {
-                    case MOBILE:
-                        if (isAllowMobileNetDownload) {  // 失败继续下载
-                            if (downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOAD_PAUSE ||
-                                    downloadFileManager.getStatus() == DownloadFileInfo.FAILURE) {
-                                downloadFileManager.startDownload();
-                            }
-                        } else {
-                            if (downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOADING) {
-                                downloadFileManager.stopDownload();
-                                Log.e("better1244", "status: " + downloadFileManager.getStatus() + ", " +
-                                        netState + ", 流量停止下载");
-                            }
-                        }
-                        break;
-                    case WIFI:  // 失败继续下载
-                        if (downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOAD_PAUSE ||
-                                downloadFileManager.getStatus() == DownloadFileInfo.FAILURE) {
-                            downloadFileManager.startDownload();
-                            Log.e("better1244", "status: " + downloadFileManager.getStatus() + ", " +
-                                    netState + ", wifi 继续下载");
-                        }
-                        break;
+                if (stateChangeNum == 0) {
+                    stateChangeNum++;
+                    return;
                 }
-                Log.e("better1244", "status: " + downloadFileManager.getStatus() + ", " +
-                        netState + ", 全局");
 
-                if(notifyManager == null) {
+                final int netState = getNetWorkState(context);
+
+                // 需要延迟一下，等待底层处理完毕后(okhttp断网，就会抛异常，中断下载)，这里再继续
+                new android.os.Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        switch (netState) {
+                            case MOBILE:
+                                if (isAllowMobileNetDownload) {  // 失败继续下载
+                                    downloadFileManager.startDownload();
+                                } else {
+                                    downloadFileManager.stopDownload();
+                                    Log.e("better1244", "stopDownLoad --> status: " + downloadFileManager.getStatus() + ", " +
+                                            netState + ", 流量停止下载");
+                                }
+                                break;
+                            case WIFI:  // 失败继续下载
+                                downloadFileManager.startDownload();
+                                Log.e("better1244", "startDownload --> status: " + downloadFileManager.getStatus() + ", " +
+                                        netState + ", wifi 继续下载");
+                                break;
+                        }
+                        Log.e("better1244", "status: " + downloadFileManager.getStatus() + ", " +
+                                netState + ", 全局");
+                    }
+                }, 400);
+
+
+                if (notifyManager == null) {
                     return;
                 }
                 // 通知栏
@@ -335,15 +341,13 @@ public class OkhttpDownActivity extends AppCompatActivity implements View.OnClic
                 // 如果是来自，点击通知栏的继续下载
                 if (intent.getAction() != null && intent.getAction().equals(ACTION_CONTINUE_DOWN)
                         && downloadFileManager != null) {
-                    if (downloadFileManager.getStatus() == DownloadFileInfo.DOWNLOAD_PAUSE ||
-                            downloadFileManager.getStatus() == DownloadFileInfo.FAILURE) {
-                        downloadFileManager.startDownload();
-                        Log.e("better123", "status: " + downloadFileManager.getStatus() + ", " +
-                                "dd" + ", 流量下 继续下载");
-                    }
+                    downloadFileManager.startDownload();
+                    Log.e("better123", "status: " + downloadFileManager.getStatus() + ", " +
+                            "dd" + ", 流量下 继续下载");
                 }
             }
         }
+
     }
 
 
