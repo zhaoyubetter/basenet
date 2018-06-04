@@ -87,8 +87,8 @@
 //			}
 //		}) {
 //			@Override
-//			public Map<String, String> getHeaders() throws AuthFailureError {
-//				Map<String, String> superHeader = super.getHeaders();
+//			public Map<String, String> handleHeader() throws AuthFailureError {
+//				Map<String, String> superHeader = super.handleHeader();
 //				if (mHeader != null && mHeader.size() > 0) {
 //					superHeader = mHeader;
 //				}
@@ -140,8 +140,8 @@
 //			}
 //		}, null) {
 //			@Override
-//			public Map<String, String> getHeaders() throws AuthFailureError {
-//				Map<String, String> superHeader = super.getHeaders();
+//			public Map<String, String> handleHeader() throws AuthFailureError {
+//				Map<String, String> superHeader = super.handleHeader();
 //				if (mHeader != null && mHeader.size() > 0) {
 //					superHeader = mHeader;
 //				}
@@ -193,8 +193,8 @@
 //			}
 //		}, null) {
 //			@Override
-//			public Map<String, String> getHeaders() throws AuthFailureError {
-//				Map<String, String> superHeader = super.getHeaders();
+//			public Map<String, String> handleHeader() throws AuthFailureError {
+//				Map<String, String> superHeader = super.handleHeader();
 //				if (mHeader != null && mHeader.size() > 0) {
 //					superHeader = mHeader;
 //				}

@@ -281,7 +281,7 @@ public final class NetUtils {
         builder.readTimeout(getTimeOut(), TimeUnit.MILLISECONDS);
         builder.writeTimeout(getTimeOut(), TimeUnit.MILLISECONDS);
 
-		/* ==设置拦截器== */
+        /* ==设置拦截器== */
         // 设置缓存
         File cacheDir = new File(getCacheDir());
         // GET 形式缓存设置
@@ -305,14 +305,14 @@ public final class NetUtils {
         }
 
         // net拦截
-        if(netInterceptors != null) {
+        if (netInterceptors != null) {
             for (Interceptor i : netInterceptors) {
                 builder.addNetworkInterceptor(i);
             }
         }
 
         // ssl，默认设置可访问所有的https网站
-        if(sSLSocketFactory == null && trustManager == null) {
+        if (sSLSocketFactory == null && trustManager == null) {
             HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory(null, null, null);
             builder.sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager);
         } else {
@@ -372,7 +372,7 @@ public final class NetUtils {
         }
 
         public Builder addInterceptor(Interceptor interce) {
-            if(this.interceptors == null) {
+            if (this.interceptors == null) {
                 interceptors = new ArrayList<>();
             }
             interceptors.add(interce);
@@ -380,7 +380,7 @@ public final class NetUtils {
         }
 
         public Builder addNetInterceptor(Interceptor interce) {
-            if(this.netInterceptors == null) {
+            if (this.netInterceptors == null) {
                 netInterceptors = new ArrayList<>();
             }
             netInterceptors.add(interce);

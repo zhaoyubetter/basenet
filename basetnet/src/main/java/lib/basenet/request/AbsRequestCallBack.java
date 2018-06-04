@@ -14,6 +14,7 @@ public abstract class AbsRequestCallBack<T> {
 	public void onSuccess(Response<T> response) {
 	}
 
+
 	public void onFailure(Throwable e) {
 	}
 

@@ -65,7 +65,7 @@ public class OkHttpRequest extends AbsRequest {
         sOkHttpClient = NetUtils.getInstance().getOkHttpClient();
     }
 
-    protected OkHttpRequest(Builder builder) {
+    public OkHttpRequest(Builder builder) {
         super(builder);
     }
 
@@ -272,7 +272,6 @@ public class OkHttpRequest extends AbsRequest {
                             mCallBack.onSuccess(myResponse);
                         }
                     });
-
                 }
             }
         });
@@ -464,8 +463,12 @@ public class OkHttpRequest extends AbsRequest {
             builder.setType(MultipartBody.FORM);
 
             if (null != mParams && mParams.size() > 0) {
-                for (Map.Entry<String, String> entry : mParams.entrySet()) {
-                    builder.addFormDataPart(entry.getKey(), entry.getValue());
+                for (Map.Entry<String, Object> entry : mParams.entrySet()) {
+                    final Object value = entry.getValue();
+                    if (value == null) {
+                        continue;
+                    }
+                    builder.addFormDataPart(entry.getKey(), value.toString());
                 }
             }
 
@@ -480,8 +483,12 @@ public class OkHttpRequest extends AbsRequest {
             // 2017-08-18 修正 bug，如果没有文件上传，使用默认FormBody方式
             FormBody.Builder formBuilder = new FormBody.Builder();
             if (null != mParams && mParams.size() > 0) {
-                for (Map.Entry<String, String> entry : mParams.entrySet()) {
-                    formBuilder.add(entry.getKey(), entry.getValue());
+                for (Map.Entry<String, Object> entry : mParams.entrySet()) {
+                    final Object value = entry.getValue();
+                    if (value == null) {
+                        continue;
+                    }
+                    formBuilder.add(entry.getKey(), value.toString());
                 }
             }
             requestBody = formBuilder.build();
@@ -547,6 +554,7 @@ public class OkHttpRequest extends AbsRequest {
     }
 
     public static class Builder extends AbsRequest.Builder {
+
         @Override
         public OkHttpRequest build() {
             return new OkHttpRequest(this);

@@ -16,6 +16,7 @@ import java.util.Map;
  * =========================== UPDATE LOG: =================================
  * Date: 2017/3/9 add start file and down file support
  * Date: 2017/4/17 add get request params, such as getUrl
+ * Date: 2018/06/03 add level and update param Map<String,String> to Map<String, Object></>
  * =========================== UPDATE LOG: =================================
  */
 public abstract class AbsRequest implements IRequest {
@@ -30,7 +31,7 @@ public abstract class AbsRequest implements IRequest {
     /**
      * 参数
      */
-    protected Map<String, String> mParams;
+    protected Map<String, Object> mParams;
 
     /**
      * 请求头信息
@@ -76,13 +77,16 @@ public abstract class AbsRequest implements IRequest {
      */
     protected boolean mIsForceRefresh = false;
 
+    /**
+     * 请求体
+     */
     protected BaseRequestBody mRequestBody;
 
     public String getUrl() {
         return mUrl;
     }
 
-    public Map<String, String> getParams() {
+    public Map<String, Object> getParams() {
         return mParams;
     }
 
@@ -167,15 +171,19 @@ public abstract class AbsRequest implements IRequest {
      * @param params
      * @return
      */
-    protected String generateUrl(String url, Map<String, String> params) {
+    protected String generateUrl(String url, Map<String, Object> params) {
         StringBuilder sb = new StringBuilder(url);
         if (params != null && params.size() > 0) {      // GET 请求，拼接url
             if (sb.charAt(sb.length() - 1) != '?') {            // get 请求 有 ?
                 sb.append("?");
             }
-            for (Map.Entry<String, String> entry : params.entrySet()) {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
                 try {
-                    sb.append(URLEncoder.encode(entry.getKey(), CHAR_SET)).append("=").append(URLEncoder.encode(entry.getValue(), CHAR_SET)).append("&");
+                    Object value = entry.getValue();
+                    if (value == null) {
+                        continue;
+                    }
+                    sb.append(URLEncoder.encode(entry.getKey(), CHAR_SET)).append("=").append(URLEncoder.encode(value.toString(), CHAR_SET)).append("&");
                 } catch (UnsupportedEncodingException e) {
                     // NOT_HAPPEND
                 }
@@ -188,6 +196,7 @@ public abstract class AbsRequest implements IRequest {
 
     /**
      * Let builder mode support inheritance
+     *
      * @param <T>
      */
     public static abstract class Builder<T extends Builder> {
@@ -195,42 +204,42 @@ public abstract class AbsRequest implements IRequest {
         /**
          * url 地址
          */
-        private String mUrl;
+        protected String mUrl;
 
         /**
          * 参数
          */
-        private Map<String, String> mParams;
+        protected Map<String, Object> mParams;
 
         /**
          * 请求头信息
          */
-        private Map<String, String> mHeader;
+        protected Map<String, String> mHeader;
 
         /**
          * 本地请求超时时间
          */
-        private long mTimeOut;
+        protected long mTimeOut;
 
         /**
          * 请求标记
          */
-        private Object mTag;
+        protected Object mTag;
 
         /**
          * 回调
          */
-        private AbsRequestCallBack mCallBack;
+        protected AbsRequestCallBack mCallBack;
 
         /**
          * 请求方式
          */
-        private int mReqType;
+        protected int mReqType;
 
         /**
          * 上传的文件
          */
-        private Map<String, File> mUploadFiles;
+        protected Map<String, File> mUploadFiles;
 
         /**
          * 下载的文件名
@@ -251,15 +260,13 @@ public abstract class AbsRequest implements IRequest {
          */
         private BaseRequestBody mBody = null;
 
-        public Builder() {
-        }
 
         public T url(String url) {
             this.mUrl = url;
             return (T) this;
         }
 
-        public T body(Map<String, String> params) {
+        public T body(Map<String, Object> params) {
             this.mParams = params;
             return (T) this;
         }
