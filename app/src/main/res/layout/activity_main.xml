@@ -36,4 +36,17 @@
         android:layout_height="wrap_content"
         android:text="测试断点" />
 
+    <TextView
+        android:background="@color/colorPrimaryDark"
+        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="封装-v2.0.0" />
+
+    <Button
+        android:id="@+id/button_v2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="新封装-与业务耦合太紧，暂时先不用" />
+
 </LinearLayout>

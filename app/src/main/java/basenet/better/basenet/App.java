@@ -7,6 +7,8 @@ import com.facebook.stetho.Stetho;
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import lib.basenet.NetUtils;
 
@@ -21,9 +23,10 @@ public class App extends Application {
 
         Stetho.initializeWithDefaults(this);
         // 全局配置NetConfig
-        NetUtils.init(
-                new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/basenet")
-                .debug(true).enablePostCache(true).timeout(10).app(this)
-                        .addNetInterceptor(new StethoInterceptor()));
+        NetUtils.init(new NetUtils.Builder().cacheDir(Environment.getExternalStorageDirectory().getAbsoluteFile() + "/basenet")
+                .debug(true)
+                .enablePostCache(true)
+                .timeout(10).app(this).addNetInterceptor(new StethoInterceptor())
+        );
     }
 }
