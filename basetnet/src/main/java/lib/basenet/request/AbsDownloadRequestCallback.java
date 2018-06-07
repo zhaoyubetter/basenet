@@ -10,6 +10,11 @@ public abstract class AbsDownloadRequestCallback extends AbsRequestCallBack<Stri
     public void onStart(){
 
     }
+
+    public void onResponse(lib.basenet.response.Response reponse) {
+
+    }
+
     /**
      * 下载 or 上传暂停回调
      */

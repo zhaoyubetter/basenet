@@ -384,21 +384,54 @@ public class OkHttpRequest extends AbsRequest {
     }
 
     @Override
-    protected void get() {
-        if (mUploadFiles != null || mRequestBody != null) {
-            post();
-        } else {
-            Request.Builder tBuilder = new Request.Builder();
-            tBuilder.get().url(generateUrl(mUrl, mParams)).tag(mTag);
-            realRequest(tBuilder);
-        }
+    public final void request() {
+        realRequest(getRequestWithType());
     }
 
-    @Override
-    protected void post() {
+    private Request.Builder getRequestWithType() {
         Request.Builder tBuilder = new Request.Builder();
-        tBuilder.url(mUrl).tag(mTag).post(getRequestBody());
-        realRequest(tBuilder);
+        if (mTag != null) {
+            tBuilder.tag(mTag);
+        }
+        switch (mReqType) {
+            case RequestType.POST:
+                tBuilder.url(mUrl).post(getRequestBody());
+                break;
+            case RequestType.DELETE:
+                if ((mParams == null || mParams.isEmpty()) && mRequestBody == null)
+                    tBuilder.delete().url(mUrl);
+                else
+                    tBuilder.delete(getRequestBody()).url(mUrl);
+                break;
+            case RequestType.HEAD:
+                tBuilder.head().url(generateUrl(mUrl, mParams));
+                break;
+            case RequestType.OPTIONS:
+                tBuilder.method("OPTIONS", getRequestBody()).url(mUrl);
+                break;
+            case RequestType.PATCH:
+                tBuilder.url(mUrl).patch(getRequestBody());
+                break;
+            case RequestType.PUT:
+                tBuilder.url(mUrl).put(getRequestBody());
+                break;
+            case RequestType.GET:
+            default:
+                tBuilder.get().url(generateUrl(mUrl, mParams));
+                break;
+        }
+        return tBuilder;
+    }
+
+    /**
+     * 同步请求
+     *
+     * @return
+     */
+    @Override
+    public final lib.basenet.response.Response requestSync() {
+        mIsSync = true;        // 新增成员变量
+        return realRequestSync(getRequestWithType());
     }
 
     @Override
@@ -408,41 +441,6 @@ public class OkHttpRequest extends AbsRequest {
         }
     }
 
-    /**
-     * 同步请求
-     *
-     * @return
-     */
-    @Override
-    public lib.basenet.response.Response requestSync() {
-        mIsSync = true;        // 新增成员变量
-
-        int type = mReqType;
-
-        lib.basenet.response.Response myResponse = null;
-        Request.Builder tBuilder = new Request.Builder();
-
-        // 避免出错，再次判断类型
-        if (mUploadFiles != null) {
-            type = RequestType.POST;
-        }
-
-        switch (type) {
-            case RequestType.GET: {
-                tBuilder.get().url(generateUrl(mUrl, mParams)).tag(mTag);
-                myResponse = realRequestSync(tBuilder);
-                break;
-            }
-            case RequestType.POST: {
-                tBuilder.url(mUrl).tag(mTag).post(getRequestBody());
-                myResponse = realRequestSync(tBuilder);
-                break;
-            }
-        }
-
-        return myResponse;
-
-    }
 
     /**
      * post 请求体, 必须有一个请求体，否则报异常

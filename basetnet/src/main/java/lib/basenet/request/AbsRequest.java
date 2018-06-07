@@ -141,29 +141,6 @@ public abstract class AbsRequest implements IRequest {
         this.mRequestBody = builder.mBody;
     }
 
-    @Override
-    public final void request() {
-        switch (mReqType) {
-            case RequestType.GET:
-                get();
-                break;
-            case RequestType.POST:
-                post();
-                break;
-        }
-    }
-
-    /**
-     * 执行get方式
-     */
-    protected abstract void get();
-
-    /**
-     * 执行post方式
-     */
-    protected abstract void post();
-
-
     /**
      * 生成请求的url地址
      *

@@ -170,7 +170,7 @@ public final class DownloadFileManager {
         downloadRequest(request, fileInfo, file);
     }
 
-    private synchronized void downloadRequest(Request request, final DownloadFileInfo fileInfo, final File file) {
+    private synchronized void downloadRequest(final Request request, final DownloadFileInfo fileInfo, final File file) {
         if (downloadListener != null) {
             downloadListener.onStart();
         }
@@ -198,7 +198,12 @@ public final class DownloadFileManager {
                     fileInfo.status = DownloadFileInfo.FAILURE;
                     currentStatus = DownloadFileInfo.FAILURE;
                     if (downloadListener != null) {
-                        downloadListener.onFailure(new Exception(response.code() + " " + response.message()));
+                        lib.basenet.response.Response<Object> response1 = new lib.basenet.response.Response(
+                                null, getResponseHeaders(response), response.body()
+                        );
+                        response1.statusCode = response.code();
+                        response1.message = response.message();
+                        downloadListener.onResponse(response1);
                     }
                     return;
                 }
@@ -272,7 +277,7 @@ public final class DownloadFileManager {
                         if (downloadListener != null && call.isCanceled()) {
                             downloadListener.onCancel();
                         } else {
-                            downloadListener.onFailure(new Exception(response.code() + " " + response.message()));
+                            downloadListener.onFailure(e);
                         }
                     }
                 }
