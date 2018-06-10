@@ -10,8 +10,10 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
-import basenet.better.basenet.bizDemo.handler.NetRequest_bak;
+import basenet.better.basenet.bizDemo.handler.NetWorkManBuilder;
+import basenet.better.basenet.bizDemo.handler.ReqCallback;
 import basenet.better.basenet.mae.bundles.update.UpdateApkManager;
 import basenet.better.basenet.v2.NongLiResponseHandler;
 import basenet.better.basenet.v2.NongliBean;
@@ -88,22 +90,15 @@ public class MainActivity extends AppCompatActivity {
      */
     private void v2() {
         final String url = "https://www.sojson.com/open/api/lunar/json.shtml";
-        new NetRequest_bak.Builder()
-                .respHandler(new NongLiResponseHandler(NongliBean.class))
-                .callback(new AbsRequestCallBack<NongliBean>() {
-                    @Override
-                    public void onSuccess(lib.basenet.response.Response<NongliBean> response) {
-                        super.onSuccess(response);
-                        Log.e("better", "" + response.responseBody.suit);
-                    }
+        new NetWorkManBuilder().action(url).callback(new ReqCallback<NongliBean>(NongliBean.class) {
+            @Override
+            public void onFailure(String message, String code, String rawData) {
+            }
+            @Override
+            public void onSuccess(NongliBean var1, List<NongliBean> var2, String raw) {
+                Log.e("better", "" +  var1.suit);
+            }
+        }).responseHandler(new NongLiResponseHandler()).go();
 
-                    @Override
-                    public void onFailure(Throwable e) {
-                        super.onFailure(e);
-                        Log.e("better", "error ： " + e.getMessage());
-                    }
-                }).url(url).build().request();
-
-        // OkHttpRequest.Builder builder = new OkHttpRequest.Builder();
     }
 }

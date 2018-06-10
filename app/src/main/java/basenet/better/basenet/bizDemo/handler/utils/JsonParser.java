@@ -10,7 +10,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import lib.basenet.response.Response;
+import basenet.better.basenet.bizDemo.handler.CustomBizErrCode;
+import basenet.better.basenet.bizDemo.handler.response.NetResponse;
 
 /**
  * 需要创建一个与业务相关的response对象
@@ -24,45 +25,49 @@ public class JsonParser<E> {
         this.clazz = clazz;
     }
 
-    public <T> Response<T> resultOperate(String data, Response<T> result) {
+    public <T> NetResponse<T> resultOperate(String data, NetResponse<T> result) {
         if (data != null) {
             try {
                 if (clazz == String.class) {
-                    result.responseBody = (T) data;
+                    result.isSuccess = true;
+                    result.t = (T) data;
                     return result;
                 }
                 com.google.gson.JsonParser jsonParser = new com.google.gson.JsonParser();
                 JsonElement contentElem = jsonParser.parse(data);
                 if (clazz == null) {
-                    result.responseBody = null;
-//                    result.responseArray = null;
+                    result.tArray = null;
+                    result.t = null;
                     return result;
                 }
                 if (contentElem.isJsonObject()) {
                     fromJson(clazz, data, result);
                 } else if (contentElem.isJsonArray()) {
                     fromJsonList(clazz, data, result);
-                } else {//content没返回数据，但整体格式是正确的，只不过数据都为null。
-                    result.responseBody = null;
-//                    result.responseArray = null;
+                } else { //content没返回数据，但整体格式是正确的，只不过数据都为null。
+                    result.t = null;
+                    result.tArray = null;
                 }
+                result.isSuccess = true;
             } catch (Exception e) {
                 // 服务端返回的json根本不对
-//                result.bizCode = "5000";
-//                result.bizMessage = "data parse error: " + data;
+                result.isSuccess = false;
+                result.errorCode = CustomBizErrCode.PARSER_ERROR;
+                result.errorMsg = "data parse error: " + data;
             }
         } else {
-//            result.bizCode = "5000";
-//            result.bizMessage = "server no data response";
+            result.errorCode = CustomBizErrCode.SERVER_ERROR;
+            result.errorMsg = "server no data response";
         }
         return result;
     }
 
-    private static <T> void fromJson(Class cls, String json, Response<T> result) {
-        result.responseBody = (T) new Gson().fromJson(json, cls);
+    private static <T> void fromJson(Class cls, String json, NetResponse<T> result) {
+        result.t = (T) new Gson().fromJson(json, cls);
+        result.tArray = null;
     }
 
-    private static <T> void fromJsonList(Class cls, String json, Response<T> result) throws JSONException {
+    private static <T> void fromJsonList(Class cls, String json, NetResponse<T> result) throws JSONException {
         JSONArray jsonArray = new JSONArray(json);
         if (jsonArray != null && jsonArray.length() > 0) {
             List<T> tArray = new ArrayList<>();
@@ -70,10 +75,10 @@ public class JsonParser<E> {
                 JSONObject obj = jsonArray.getJSONObject(i);
                 tArray.add((T) new Gson().fromJson(obj.toString(), cls));
             }
-//            result.responseArray = tArray;
+            result.tArray = tArray;
         } else {
-//            result.responseArray = null;
+            result.tArray = null;
         }
-        result.responseBody = null;
+        result.t = null;
     }
 }

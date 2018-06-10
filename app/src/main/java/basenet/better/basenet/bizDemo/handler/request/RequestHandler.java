@@ -1,6 +1,8 @@
 package basenet.better.basenet.bizDemo.handler.request;
 
+
 import java.util.Map;
+import basenet.better.basenet.bizDemo.handler.exception.CustomBizException;
 
 /**
  * <pre>
@@ -23,6 +25,6 @@ public interface RequestHandler {
      *
      * @param originParams
      */
-    void handleParams(Map<String, Object> originParams) throws Exception;
+    void handleParams(Map<String, Object> originParams) throws CustomBizException;
 
 }

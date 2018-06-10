@@ -1,43 +1,49 @@
 package basenet.better.basenet.bizDemo.handler.response;
 
-import android.text.TextUtils;
 
 import java.io.File;
+import java.util.List;
 
-import lib.basenet.exception.BaseNetException;
+import basenet.better.basenet.bizDemo.handler.ReqCallback;
+import basenet.better.basenet.bizDemo.handler.exception.CustomBizException;
 import lib.basenet.request.AbsRequestCallBack;
 import lib.basenet.response.Response;
 
 /**
- * responseHandler 处理器
+ * responseHandler 处理器包装器
  *
  * @param <T>
  */
 public abstract class ResponseHandler<T> extends AbsRequestCallBack<String> {
 
-    /**
-     * 原始callback
-     */
-    private AbsRequestCallBack<T> originCallBack;
+    private ResReqCallback innerCallback;
+    protected ReqCallback<T> reqCallback;
 
-    /**
-     * 具体业务数据
-     */
-    protected Class<T> clazz;
-
-    public Class<T> getClazz() {
-        return this.clazz;
-    }
-
-    public ResponseHandler(Class<T> clazz) {
-        if(clazz == null) {
-            throw new RuntimeException("clazz can't be null, default can use String.class");
+    public final void setCallback(ReqCallback<T> reqCallback) {
+        this.reqCallback = reqCallback;
+        if (reqCallback != null) {
+            this.innerCallback = new ResReqCallback(reqCallback.getClazz(), reqCallback);
         }
-        this.clazz = clazz;
     }
 
-    public final void setOiginalCallback(AbsRequestCallBack callback) {
-        this.originCallBack = callback;
+    @Override
+    public final void onFailure(Throwable e) {
+        super.onFailure(e);
+        if (innerCallback != null) {
+            if (e instanceof CustomBizException) {
+                innerCallback.onFailure(e.getMessage(), ((CustomBizException) e).code, null);
+            } else {
+                innerCallback.onFailure(e.getMessage(), "", null);
+            }
+        }
+    }
+
+    @Override
+    public final void onProgressUpdate(long contentLength, long bytesRead, boolean done) {
+        super.onProgressUpdate(contentLength, bytesRead, done);
+        if (innerCallback != null) {
+            innerCallback.onProgressUpdate(contentLength, bytesRead, done);
+        }
     }
 
     @Override
@@ -48,52 +54,37 @@ public abstract class ResponseHandler<T> extends AbsRequestCallBack<String> {
         try {
             headerParser(response);
         } catch (Exception e) {
-            if (originCallBack != null) {
-                MainThreadDelivery.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        originCallBack.onFailure(new BaseNetException("header parser error!"));
-                    }
-                });
+            if (innerCallback != null) {
+                innerCallback.onFailure("header parser error!", "" + response.statusCode, null);
             }
-
             return;     // 头部处理失败
         }
 
         // ==== 2. 请求是否成功判断
         if (!response.isSuccessful()) {
-            if (originCallBack != null) {
-                MainThreadDelivery.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        originCallBack.onFailure(new Exception(response.message));
-                    }
-                });
+            if (innerCallback != null) {
+                innerCallback.onFailure(response.message, response.statusCode + "", null);
+                if (response.responseBody instanceof File) {
+                    innerCallback.onFailure(response.message, response.statusCode + "", null);
+                } else if (response.responseBody instanceof String) {
+                    innerCallback.onFailure(response.message, response.statusCode + "", (String) response.responseBody);
+                } else {
+                    innerCallback.onFailure(response.message, response.statusCode + "", null);
+                }
             }
             return;
         }
 
         // ==== 通过body判断是不是下载文件
         if (response.responseBody instanceof File) {
-            if (originCallBack != null) {
-                MainThreadDelivery.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        originCallBack.onFailure(new Exception(response.message));
-                    }
-                });
-            }
+            String name = ((File) response.responseBody).getAbsolutePath();
+            innerCallback.onSuccess(null, null, name);
             return;
         }
 
         //===== 响应体 body 不是String
         if (!(response.responseBody instanceof String)) {
-            MainThreadDelivery.post(new Runnable() {
-                @Override
-                public void run() {
-                    originCallBack.onFailure(new Exception(response.message));
-                }
-            });
+            innerCallback.onFailure(response.message, response.statusCode + "", null);
             return;
         }
 
@@ -106,25 +97,22 @@ public abstract class ResponseHandler<T> extends AbsRequestCallBack<String> {
          * 3.解析；
          */
         // ==== 4. 处理原始数据
+        NetResponse<T> result = new NetResponse<>();
+        result.isFromCache = response.isFromCache;
+        result.httpCode = response.statusCode;
+        result.httpMsg = response.message;
+
         try {
             // ==== 获取解析后的body原始数据
             String body = getContentData(originData);       // 获取body数据
-            final Response<T> resultResp = new Response<>(response.request, response.responseHeader, null);
             // ==== 外界解析数据
-            contentParse(resultResp, body, clazz);
-
-            resultResp.statusCode = response.statusCode;
-            if (originCallBack != null) {
-                MainThreadDelivery.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        originCallBack.onSuccess(resultResp);
-                    }
-                });
+            contentParse(result, body);
+            if (innerCallback != null) {
+                innerCallback.onSuccess(result.t, result.tArray, result.rawData);
             }
-        } catch (Exception e) {
-            if (originCallBack != null) {
-                originCallBack.onFailure(new BaseNetException(e));
+        } catch (CustomBizException e) {
+            if (innerCallback != null) {
+                innerCallback.onFailure(e.getMessage(), e.code, originData);
             }
         }
     }
@@ -133,7 +121,7 @@ public abstract class ResponseHandler<T> extends AbsRequestCallBack<String> {
     /**
      * 1、处理头部内容
      */
-    public void headerParser(Response response) throws Exception {
+    public void headerParser(Response response) throws CustomBizException {
     }
 
     /**
@@ -142,18 +130,54 @@ public abstract class ResponseHandler<T> extends AbsRequestCallBack<String> {
      * b.解密
      * c.解析；
      */
-    public String getContentData(String originData) throws Exception {
-        return originData;
-    }
+    public abstract String getContentData(String originData) throws CustomBizException;
 
     /**
      * 3.数据处理，用户真正需要的数据
      *
-     * @throws Exception
+     * @throws CustomBizException
      */
-    public void contentParse(Response response, String content, Class clazz) throws Exception {
-        if (TextUtils.isEmpty(content)) {
-            throw new BaseNetException("server exception: content is null!");
+    public void contentParse(NetResponse<T> response, String content) throws CustomBizException {
+        response.isSuccess = true;   // 业务成功，失败设定；
+    }
+
+    /*---------- 内部执行回调，包装，主线程中，回调 ---------------*/
+    private class ResReqCallback extends ReqCallback<T> {
+        private ReqCallback<T> reqCallback;
+
+        private ResReqCallback(Class<T> clazz, ReqCallback<T> reqCallback) {
+            super(clazz);
+            this.reqCallback = reqCallback;
+        }
+
+        @Override
+        public void onFailure(final String errorMsg, final String code, final String rawData) {
+            MainThreadDelivery.post(new Runnable() {
+                @Override
+                public void run() {
+                    reqCallback.onFailure(errorMsg, code, rawData);
+                }
+            });
+        }
+
+        @Override
+        public void onSuccess(final T t, final List<T> tArray, final String rawData) {
+            MainThreadDelivery.post(new Runnable() {
+                @Override
+                public void run() {
+                    reqCallback.onSuccess(t, tArray, rawData);
+                }
+            });
+        }
+
+        @Override
+        public void onProgressUpdate(final long contentLength, final long bytesRead, final boolean done) {
+            MainThreadDelivery.post(new Runnable() {
+                @Override
+                public void run() {
+                    reqCallback.onProgressUpdate(contentLength, bytesRead, done);
+                }
+            });
         }
     }
 }
